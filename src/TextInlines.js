@@ -124,7 +124,9 @@ class TextInlines {
 
 			item.font = this.pdfDocument.provideFont(font, bold, italics);
 
-			item.alignment = StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', 'left');
+			let explicitAlignment = StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', null);
+      item.alignment = explicitAlignment !== null ? explicitAlignment : 'left';
+      item._explicitAlignment = explicitAlignment !== null;
 
 			// RTL Support: detect direction and set isRTL on each inline
 			let direction = StyleContextStack.getStyleProperty(item, styleContextStack, 'direction', null);
@@ -142,12 +144,9 @@ class TextInlines {
 			}
 
 			// For RTL text, auto-default alignment to 'right' if not explicitly set
-			if (item.isRTL && item.alignment === 'left') {
-				let explicitAlignment = StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', null);
-				if (!explicitAlignment) {
-					item.alignment = 'right';
-				}
-			}
+			if (item.isRTL && item.alignment === 'left' && !item._explicitAlignment) {
+        item.alignment = 'right';
+      }
 
 			item.fontSize = StyleContextStack.getStyleProperty(item, styleContextStack, 'fontSize', 12);
 			item.fontFeatures = StyleContextStack.getStyleProperty(item, styleContextStack, 'fontFeatures', null);

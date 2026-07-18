@@ -1,4 +1,4 @@
-/*! pdfmake-rtl v2.1.2, @license MIT, @link https://github.com/aysnet1/pdfmake-rtl#readme */
+/*! pdfmake-rtl v2.1.2, @license MIT, @link https://github.com/amgadfikry/pdfmake-rtl#readme */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -22,10 +22,12 @@ __webpack_require__.d(__webpack_exports__, {
   "default": () => (/* binding */ browser_extensions)
 });
 
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
+var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(3442);
+var pdfkit_es = __webpack_require__(4675);
 ;// ./src/PDFDocument.js
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
 const typeName = (bold, italics) => {
   let type = 'normal';
@@ -877,7 +879,7 @@ function processRTLElement(element, forceRTL) {
 }
 
 ;// ./src/DocPreprocessor.js
-/* provided dependency */ var DocPreprocessor_Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var DocPreprocessor_Buffer = __webpack_require__(783).Buffer;
 
 
 
@@ -3007,7 +3009,9 @@ class TextInlines {
         }
       }
       item.font = this.pdfDocument.provideFont(font, bold, italics);
-      item.alignment = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', 'left');
+      let explicitAlignment = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', null);
+      item.alignment = explicitAlignment !== null ? explicitAlignment : 'left';
+      item._explicitAlignment = explicitAlignment !== null;
 
       // RTL Support: detect direction and set isRTL on each inline
       let direction = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'direction', null);
@@ -3025,11 +3029,8 @@ class TextInlines {
       }
 
       // For RTL text, auto-default alignment to 'right' if not explicitly set
-      if (item.isRTL && item.alignment === 'left') {
-        let explicitAlignment = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'alignment', null);
-        if (!explicitAlignment) {
-          item.alignment = 'right';
-        }
+      if (item.isRTL && item.alignment === 'left' && !item._explicitAlignment) {
+        item.alignment = 'right';
       }
       item.fontSize = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'fontSize', 12);
       item.fontFeatures = src_StyleContextStack.getStyleProperty(item, styleContextStack, 'fontFeatures', null);
@@ -4986,10 +4987,9 @@ class DocumentContext extends events.EventEmitter {
   initializePage() {
     this.y = this.pageMargins.top;
     this.availableHeight = this.getCurrentPage().pageSize.height - this.pageMargins.top - this.pageMargins.bottom;
-    const {
-      pageCtx,
-      isSnapshot
-    } = this.pageSnapshot();
+    const _this$pageSnapshot = this.pageSnapshot(),
+      pageCtx = _this$pageSnapshot.pageCtx,
+      isSnapshot = _this$pageSnapshot.isSnapshot;
     pageCtx.availableWidth = this.getCurrentPage().pageSize.width - this.pageMargins.left - this.pageMargins.right;
     if (isSnapshot && this.marginXTopParent) {
       pageCtx.availableWidth -= this.marginXTopParent[0];
@@ -5228,12 +5228,13 @@ class ElementWriter extends events.EventEmitter {
     let width = this.context().availableWidth;
     let lineWidth = line.getWidth();
     let alignment = line.inlines && line.inlines.length > 0 && line.inlines[0].alignment;
+    let wasExplicit = line.inlines && line.inlines.length > 0 && line.inlines[0]._explicitAlignment;
     let isRTL = line.isRTL && line.isRTL();
     let offset = 0;
 
     // For RTL lines, apply special handling
     if (isRTL) {
-      if (!alignment || alignment === 'left') {
+      if (!alignment || alignment === 'left' && !wasExplicit) {
         alignment = 'right';
       }
       this.adjustRTLInlines(line, width);
@@ -7557,18 +7558,19 @@ class LayoutBuilder {
     return null;
   }
   processRow(_ref) {
-    let {
-      marginX = [0, 0],
-      dontBreakRows = false,
-      rowsWithoutPageBreak = 0,
-      cells,
-      widths,
-      gaps,
-      tableNode,
-      tableBody,
-      rowIndex,
-      height
-    } = _ref;
+    let _ref$marginX = _ref.marginX,
+      marginX = _ref$marginX === void 0 ? [0, 0] : _ref$marginX,
+      _ref$dontBreakRows = _ref.dontBreakRows,
+      dontBreakRows = _ref$dontBreakRows === void 0 ? false : _ref$dontBreakRows,
+      _ref$rowsWithoutPageB = _ref.rowsWithoutPageBreak,
+      rowsWithoutPageBreak = _ref$rowsWithoutPageB === void 0 ? 0 : _ref$rowsWithoutPageB,
+      cells = _ref.cells,
+      widths = _ref.widths,
+      gaps = _ref.gaps,
+      tableNode = _ref.tableNode,
+      tableBody = _ref.tableBody,
+      rowIndex = _ref.rowIndex,
+      height = _ref.height;
     const isUnbreakableRow = dontBreakRows || rowIndex <= rowsWithoutPageBreak - 1;
     let pageBreaks = [];
     let pageBreaksByRowSpan = [];
@@ -8731,6 +8733,7 @@ class Renderer {
 
 
 
+
 /**
  * Printer which turns document definition into a pdf
  *
@@ -9138,7 +9141,7 @@ class pdfmake {
 }
 /* harmony default export */ const base = (pdfmake);
 ;// ./src/OutputDocument.js
-/* provided dependency */ var OutputDocument_Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var OutputDocument_Buffer = __webpack_require__(783).Buffer;
 class OutputDocument {
   /**
    * @param {Promise<object>} pdfDocumentPromise
@@ -9200,7 +9203,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(1116);
+var FileSaver_min = __webpack_require__(5468);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -9419,10 +9422,7 @@ module.exports = __webpack_require__(6811)["default"];
 
 "use strict";
 var __webpack_dirname__ = "/";
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 const normalizeFilename = filename => {
   if (filename.indexOf(__webpack_dirname__) === 0) {
     filename = filename.substring(__webpack_dirname__.length);
@@ -9479,6 +9479,10 @@ class VirtualFileSystem {
   }
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (new VirtualFileSystem());
+/* harmony export */ __webpack_require__.d(__webpack_exports__, [
+/* harmony export */   "default", 0, /* export default binding */ __WEBPACK_DEFAULT_EXPORT__
+/* harmony export */ ]);
+
 
 /***/ },
 
@@ -13344,6 +13348,7 @@ if ( true && module && typeof module.exports !== 'undefined') {
 
 
 
+__webpack_require__(187);
 __webpack_require__(8376);
 __webpack_require__(6401);
 __webpack_require__(2017);
@@ -21658,7 +21663,10 @@ class StateMachine {
    */
 
   apply(str, actions) {
-    for (var [start, end, tags] of this.match(str)) {
+    for (var _ref of this.match(str)) {
+      var start = _ref[0];
+      var end = _ref[1];
+      var tags = _ref[2];
       for (var tag of tags) {
         if (typeof actions[tag] === 'function') {
           actions[tag](start, end, str.slice(start, end + 1));
@@ -21782,369 +21790,6 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   exports.toByteArray = b64ToByteArray;
   exports.fromByteArray = uint8ToBase64;
 })( false ? 0 : exports);
-
-/***/ },
-
-/***/ 336
-(module, __unused_webpack_exports, __webpack_require__) {
-
-"use strict";
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
-
-
-/*
- * MIT LICENSE
- * Copyright (c) 2011 Devon Govett
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
- * to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
- * BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-const fs = __webpack_require__(2416);
-const zlib = __webpack_require__(6729);
-module.exports = class PNG {
-  static decode(path, fn) {
-    return fs.readFile(path, function (err, file) {
-      const png = new PNG(file);
-      return png.decode(pixels => fn(pixels));
-    });
-  }
-  static load(path) {
-    const file = fs.readFileSync(path);
-    return new PNG(file);
-  }
-  constructor(data) {
-    let i;
-    this.data = data;
-    this.pos = 8; // Skip the default header
-
-    this.palette = [];
-    this.imgData = [];
-    this.transparency = {};
-    this.text = {};
-    while (true) {
-      const chunkSize = this.readUInt32();
-      let section = '';
-      for (i = 0; i < 4; i++) {
-        section += String.fromCharCode(this.data[this.pos++]);
-      }
-      switch (section) {
-        case 'IHDR':
-          // we can grab  interesting values from here (like width, height, etc)
-          this.width = this.readUInt32();
-          this.height = this.readUInt32();
-          this.bits = this.data[this.pos++];
-          this.colorType = this.data[this.pos++];
-          this.compressionMethod = this.data[this.pos++];
-          this.filterMethod = this.data[this.pos++];
-          this.interlaceMethod = this.data[this.pos++];
-          break;
-        case 'PLTE':
-          this.palette = this.read(chunkSize);
-          break;
-        case 'IDAT':
-          for (i = 0; i < chunkSize; i++) {
-            this.imgData.push(this.data[this.pos++]);
-          }
-          break;
-        case 'tRNS':
-          // This chunk can only occur once and it must occur after the
-          // PLTE chunk and before the IDAT chunk.
-          this.transparency = {};
-          switch (this.colorType) {
-            case 3:
-              // Indexed color, RGB. Each byte in this chunk is an alpha for
-              // the palette index in the PLTE ("palette") chunk up until the
-              // last non-opaque entry. Set up an array, stretching over all
-              // palette entries which will be 0 (opaque) or 1 (transparent).
-              this.transparency.indexed = this.read(chunkSize);
-              var short = 255 - this.transparency.indexed.length;
-              if (short > 0) {
-                for (i = 0; i < short; i++) {
-                  this.transparency.indexed.push(255);
-                }
-              }
-              break;
-            case 0:
-              // Greyscale. Corresponding to entries in the PLTE chunk.
-              // Grey is two bytes, range 0 .. (2 ^ bit-depth) - 1
-              this.transparency.grayscale = this.read(chunkSize)[0];
-              break;
-            case 2:
-              // True color with proper alpha channel.
-              this.transparency.rgb = this.read(chunkSize);
-              break;
-          }
-          break;
-        case 'tEXt':
-          var text = this.read(chunkSize);
-          var index = text.indexOf(0);
-          var key = String.fromCharCode.apply(String, text.slice(0, index));
-          this.text[key] = String.fromCharCode.apply(String, text.slice(index + 1));
-          break;
-        case 'IEND':
-          // we've got everything we need!
-          switch (this.colorType) {
-            case 0:
-            case 3:
-            case 4:
-              this.colors = 1;
-              break;
-            case 2:
-            case 6:
-              this.colors = 3;
-              break;
-          }
-          this.hasAlphaChannel = [4, 6].includes(this.colorType);
-          var colors = this.colors + (this.hasAlphaChannel ? 1 : 0);
-          this.pixelBitlength = this.bits * colors;
-          switch (this.colors) {
-            case 1:
-              this.colorSpace = 'DeviceGray';
-              break;
-            case 3:
-              this.colorSpace = 'DeviceRGB';
-              break;
-          }
-          this.imgData = new Buffer(this.imgData);
-          return;
-          // removed by dead control flow
-
-        default:
-          // unknown (or unimportant) section, skip it
-          this.pos += chunkSize;
-      }
-      this.pos += 4; // Skip the CRC
-
-      if (this.pos > this.data.length) {
-        throw new Error('Incomplete or corrupt PNG file');
-      }
-    }
-  }
-  read(bytes) {
-    const result = new Array(bytes);
-    for (let i = 0; i < bytes; i++) {
-      result[i] = this.data[this.pos++];
-    }
-    return result;
-  }
-  readUInt32() {
-    const b1 = this.data[this.pos++] << 24;
-    const b2 = this.data[this.pos++] << 16;
-    const b3 = this.data[this.pos++] << 8;
-    const b4 = this.data[this.pos++];
-    return b1 | b2 | b3 | b4;
-  }
-  readUInt16() {
-    const b1 = this.data[this.pos++] << 8;
-    const b2 = this.data[this.pos++];
-    return b1 | b2;
-  }
-  decodePixels(fn) {
-    return zlib.inflate(this.imgData, (err, data) => {
-      if (err) {
-        throw err;
-      }
-      const {
-        width,
-        height
-      } = this;
-      const pixelBytes = this.pixelBitlength / 8;
-      const pixels = new Buffer(width * height * pixelBytes);
-      const {
-        length
-      } = data;
-      let pos = 0;
-      function pass(x0, y0, dx, dy, singlePass) {
-        if (singlePass === void 0) {
-          singlePass = false;
-        }
-        const w = Math.ceil((width - x0) / dx);
-        const h = Math.ceil((height - y0) / dy);
-        const scanlineLength = pixelBytes * w;
-        const buffer = singlePass ? pixels : new Buffer(scanlineLength * h);
-        let row = 0;
-        let c = 0;
-        while (row < h && pos < length) {
-          var byte, col, i, left, upper;
-          switch (data[pos++]) {
-            case 0:
-              // None
-              for (i = 0; i < scanlineLength; i++) {
-                buffer[c++] = data[pos++];
-              }
-              break;
-            case 1:
-              // Sub
-              for (i = 0; i < scanlineLength; i++) {
-                byte = data[pos++];
-                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
-                buffer[c++] = (byte + left) % 256;
-              }
-              break;
-            case 2:
-              // Up
-              for (i = 0; i < scanlineLength; i++) {
-                byte = data[pos++];
-                col = (i - i % pixelBytes) / pixelBytes;
-                upper = row && buffer[(row - 1) * scanlineLength + col * pixelBytes + i % pixelBytes];
-                buffer[c++] = (upper + byte) % 256;
-              }
-              break;
-            case 3:
-              // Average
-              for (i = 0; i < scanlineLength; i++) {
-                byte = data[pos++];
-                col = (i - i % pixelBytes) / pixelBytes;
-                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
-                upper = row && buffer[(row - 1) * scanlineLength + col * pixelBytes + i % pixelBytes];
-                buffer[c++] = (byte + Math.floor((left + upper) / 2)) % 256;
-              }
-              break;
-            case 4:
-              // Paeth
-              for (i = 0; i < scanlineLength; i++) {
-                var paeth, upperLeft;
-                byte = data[pos++];
-                col = (i - i % pixelBytes) / pixelBytes;
-                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
-                if (row === 0) {
-                  upper = upperLeft = 0;
-                } else {
-                  upper = buffer[(row - 1) * scanlineLength + col * pixelBytes + i % pixelBytes];
-                  upperLeft = col && buffer[(row - 1) * scanlineLength + (col - 1) * pixelBytes + i % pixelBytes];
-                }
-                const p = left + upper - upperLeft;
-                const pa = Math.abs(p - left);
-                const pb = Math.abs(p - upper);
-                const pc = Math.abs(p - upperLeft);
-                if (pa <= pb && pa <= pc) {
-                  paeth = left;
-                } else if (pb <= pc) {
-                  paeth = upper;
-                } else {
-                  paeth = upperLeft;
-                }
-                buffer[c++] = (byte + paeth) % 256;
-              }
-              break;
-            default:
-              throw new Error(`Invalid filter algorithm: ${data[pos - 1]}`);
-          }
-          if (!singlePass) {
-            let pixelsPos = ((y0 + row * dy) * width + x0) * pixelBytes;
-            let bufferPos = row * scanlineLength;
-            for (i = 0; i < w; i++) {
-              for (let j = 0; j < pixelBytes; j++) pixels[pixelsPos++] = buffer[bufferPos++];
-              pixelsPos += (dx - 1) * pixelBytes;
-            }
-          }
-          row++;
-        }
-      }
-      if (this.interlaceMethod === 1) {
-        /*
-          1 6 4 6 2 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-          3 6 4 6 3 6 4 6
-          7 7 7 7 7 7 7 7
-          5 6 5 6 5 6 5 6
-          7 7 7 7 7 7 7 7
-        */
-        pass(0, 0, 8, 8); // 1
-        pass(4, 0, 8, 8); // 2
-        pass(0, 4, 4, 8); // 3
-        pass(2, 0, 4, 4); // 4
-        pass(0, 2, 2, 4); // 5
-        pass(1, 0, 2, 2); // 6
-        pass(0, 1, 1, 2); // 7
-      } else {
-        pass(0, 0, 1, 1, true);
-      }
-      return fn(pixels);
-    });
-  }
-  decodePalette() {
-    const {
-      palette
-    } = this;
-    const {
-      length
-    } = palette;
-    const transparency = this.transparency.indexed || [];
-    const ret = new Buffer(transparency.length + length);
-    let pos = 0;
-    let c = 0;
-    for (let i = 0; i < length; i += 3) {
-      var left;
-      ret[pos++] = palette[i];
-      ret[pos++] = palette[i + 1];
-      ret[pos++] = palette[i + 2];
-      ret[pos++] = (left = transparency[c++]) != null ? left : 255;
-    }
-    return ret;
-  }
-  copyToImageData(imageData, pixels) {
-    let j, k;
-    let {
-      colors
-    } = this;
-    let palette = null;
-    let alpha = this.hasAlphaChannel;
-    if (this.palette.length) {
-      palette = this._decodedPalette || (this._decodedPalette = this.decodePalette());
-      colors = 4;
-      alpha = true;
-    }
-    const data = imageData.data || imageData;
-    const {
-      length
-    } = data;
-    const input = palette || pixels;
-    let i = j = 0;
-    if (colors === 1) {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        const v = input[k++];
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = v;
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    } else {
-      while (i < length) {
-        k = palette ? pixels[i / 4] * 4 : j;
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = input[k++];
-        data[i++] = alpha ? input[k++] : 255;
-        j = k;
-      }
-    }
-  }
-  decode(fn) {
-    const ret = new Buffer(this.width * this.height * 4);
-    return this.decodePixels(pixels => {
-      this.copyToImageData(ret, pixels);
-      return fn(ret);
-    });
-  }
-};
 
 /***/ },
 
@@ -22477,9 +22122,8 @@ __webpack_require__(8376);
 __webpack_require__(6401);
 __webpack_require__(2017);
 const inflate = __webpack_require__(3483);
-const {
-  swap32LE
-} = __webpack_require__(6016);
+const _require = __webpack_require__(6016),
+  swap32LE = _require.swap32LE;
 
 // Shift size for getting the index-1 table offset.
 const SHIFT_1 = 6 + 5;
@@ -22570,11 +22214,10 @@ class UnicodeTrie {
       this.data = new Uint32Array(data.buffer);
     } else {
       // pre-parsed data
-      ({
-        data: this.data,
-        highStart: this.highStart,
-        errorValue: this.errorValue
-      } = data);
+      var _data = data;
+      this.data = _data.data;
+      this.highStart = _data.highStart;
+      this.errorValue = _data.errorValue;
     }
   }
   get(codePoint) {
@@ -22644,19 +22287,20 @@ module.exports = {
 
 /***/ },
 
-/***/ 3442
+/***/ 4675
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 var __webpack_unused_export__;
 var __webpack_dirname__ = "/";
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
 
 __webpack_unused_export__ = ({
   value: true
 });
 exports.A = void 0;
+__webpack_require__(187);
 __webpack_require__(8376);
 __webpack_require__(6401);
 __webpack_require__(2017);
@@ -22667,7 +22311,7 @@ var fontkit = _interopRequireWildcard(__webpack_require__(1715));
 var _events = __webpack_require__(4785);
 var _linebreak = _interopRequireDefault(__webpack_require__(2532));
 var _jpegExif = _interopRequireDefault(__webpack_require__(8834));
-var _pngJs = _interopRequireDefault(__webpack_require__(336));
+var _pngJs = _interopRequireDefault(__webpack_require__(381));
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 var fs = __webpack_require__(2416);
@@ -23532,9 +23176,7 @@ function wordArrayToBuffer(wordArray) {
   return Buffer.from(byteArray);
 }
 const PASSWORD_PADDING = [0x28, 0xbf, 0x4e, 0x5e, 0x4e, 0x75, 0x8a, 0x41, 0x64, 0x00, 0x4e, 0x56, 0xff, 0xfa, 0x01, 0x08, 0x2e, 0x2e, 0x00, 0xb6, 0xd0, 0x68, 0x3e, 0x80, 0x2f, 0x0c, 0xa9, 0xfe, 0x64, 0x53, 0x69, 0x7a];
-const {
-  number: number$2
-} = PDFObject;
+const number$2 = PDFObject.number;
 class PDFGradient$1 {
   constructor(doc) {
     this.doc = doc;
@@ -23683,8 +23325,20 @@ class PDFGradient$1 {
     return pattern;
   }
   apply(stroke) {
-    const [m0, m1, m2, m3, m4, m5] = this.doc._ctm;
-    const [m11, m12, m21, m22, dx, dy] = this.transform;
+    const _this$doc$_ctm = this.doc._ctm,
+      m0 = _this$doc$_ctm[0],
+      m1 = _this$doc$_ctm[1],
+      m2 = _this$doc$_ctm[2],
+      m3 = _this$doc$_ctm[3],
+      m4 = _this$doc$_ctm[4],
+      m5 = _this$doc$_ctm[5];
+    const _this$transform = this.transform,
+      m11 = _this$transform[0],
+      m12 = _this$transform[1],
+      m21 = _this$transform[2],
+      m22 = _this$transform[3],
+      dx = _this$transform[4],
+      dy = _this$transform[5];
     const m = [m0 * m11 + m2 * m12, m1 * m11 + m3 * m12, m0 * m21 + m2 * m22, m1 * m21 + m3 * m22, m0 * dx + m2 * dy + m4, m1 * dx + m3 * dy + m5];
     if (!this.embedded || m.join(' ') !== this.matrix.join(' ')) {
       this.embed(m);
@@ -23756,8 +23410,19 @@ class PDFTilingPattern$1 {
   createPattern() {
     const resources = this.doc.ref();
     resources.end();
-    const [m0, m1, m2, m3, m4, m5] = this.doc._ctm;
-    const [m11, m12, m21, m22, dx, dy] = [1, 0, 0, 1, 0, 0];
+    const _this$doc$_ctm2 = this.doc._ctm,
+      m0 = _this$doc$_ctm2[0],
+      m1 = _this$doc$_ctm2[1],
+      m2 = _this$doc$_ctm2[2],
+      m3 = _this$doc$_ctm2[3],
+      m4 = _this$doc$_ctm2[4],
+      m5 = _this$doc$_ctm2[5];
+    const m11 = 1,
+      m12 = 0,
+      m21 = 0,
+      m22 = 1,
+      dx = 0,
+      dy = 0;
     const m = [m0 * m11 + m2 * m12, m1 * m11 + m3 * m12, m0 * m21 + m2 * m22, m1 * m21 + m3 * m22, m0 * dx + m2 * dy + m4, m1 * dx + m3 * dy + m5];
     const pattern = this.doc.ref({
       Type: 'Pattern',
@@ -23809,14 +23474,10 @@ class PDFTilingPattern$1 {
 var pattern = {
   PDFTilingPattern: PDFTilingPattern$1
 };
-const {
-  PDFGradient,
-  PDFLinearGradient,
-  PDFRadialGradient
-} = Gradient;
-const {
-  PDFTilingPattern
-} = pattern;
+const PDFGradient = Gradient.PDFGradient,
+  PDFLinearGradient = Gradient.PDFLinearGradient,
+  PDFRadialGradient = Gradient.PDFRadialGradient;
+const PDFTilingPattern = pattern.PDFTilingPattern;
 var ColorMixin = {
   initColor() {
     this.spotColors = {};
@@ -23925,7 +23586,9 @@ var ColorMixin = {
     }
     const key = `${fillOpacity}_${strokeOpacity}`;
     if (this._opacityRegistry[key]) {
-      [dictionary, name] = this._opacityRegistry[key];
+      var _this$_opacityRegistr = this._opacityRegistry[key];
+      dictionary = _this$_opacityRegistr[0];
+      name = _this$_opacityRegistr[1];
     } else {
       dictionary = {
         Type: 'ExtGState'
@@ -24365,7 +24028,13 @@ const runners = {
   }
 };
 const solveArc = function (doc, x, y, coords) {
-  const [rx, ry, rot, large, sweep, ex, ey] = coords;
+  const rx = coords[0],
+    ry = coords[1],
+    rot = coords[2],
+    large = coords[3],
+    sweep = coords[4],
+    ex = coords[5],
+    ey = coords[6];
   const segs = arcToSegments(ex, ey, rx, ry, large, sweep, rot, x, y);
   for (let seg of segs) {
     const bez = segmentToBezier(...seg);
@@ -24443,9 +24112,7 @@ class SVGPath {
     apply(commands, doc);
   }
 }
-const {
-  number: number$1
-} = PDFObject;
+const number$1 = PDFObject.number;
 const KAPPA = 4.0 * ((Math.sqrt(2) - 1.0) / 3.0);
 var VectorMixin = {
   initVector() {
@@ -24660,7 +24327,12 @@ var VectorMixin = {
       return this;
     }
     const m = this._ctm;
-    const [m0, m1, m2, m3, m4, m5] = m;
+    const m0 = m[0],
+      m1 = m[1],
+      m2 = m[2],
+      m3 = m[3],
+      m4 = m[4],
+      m5 = m[5];
     m[0] = m0 * m11 + m2 * m12;
     m[1] = m1 * m11 + m3 * m12;
     m[2] = m0 * m21 + m2 * m22;
@@ -24681,7 +24353,9 @@ var VectorMixin = {
     const sin = Math.sin(rad);
     let x = y = 0;
     if (options.origin != null) {
-      [x, y] = options.origin;
+      var _options$origin = options.origin;
+      x = _options$origin[0];
+      y = _options$origin[1];
       const x1 = x * cos - y * sin;
       const y1 = x * sin + y * cos;
       x -= x1;
@@ -24701,7 +24375,9 @@ var VectorMixin = {
     }
     let x = y = 0;
     if (options.origin != null) {
-      [x, y] = options.origin;
+      var _options$origin2 = options.origin;
+      x = _options$origin2[0];
+      y = _options$origin2[1];
       x -= xFactor * x;
       y -= yFactor * y;
     }
@@ -24980,14 +24656,13 @@ class StandardFont extends PDFFont {
     this.name = name;
     this.id = id;
     this.font = new AFMFont(STANDARD_FONTS[this.name]());
-    ({
-      ascender: this.ascender,
-      descender: this.descender,
-      bbox: this.bbox,
-      lineGap: this.lineGap,
-      xHeight: this.xHeight,
-      capHeight: this.capHeight
-    } = this.font);
+    var _this$font = this.font;
+    this.ascender = _this$font.ascender;
+    this.descender = _this$font.descender;
+    this.bbox = _this$font.bbox;
+    this.lineGap = _this$font.lineGap;
+    this.xHeight = _this$font.xHeight;
+    this.capHeight = _this$font.capHeight;
   }
   embed() {
     this.dictionary.data = {
@@ -25106,10 +24781,9 @@ class EmbeddedFont extends PDFFont {
     };
   }
   encode(text, features) {
-    const {
-      glyphs,
-      positions
-    } = this.layout(text, features);
+    const _this$layout = this.layout(text, features),
+      glyphs = _this$layout.glyphs,
+      positions = _this$layout.positions;
     const res = [];
     for (let i = 0; i < glyphs.length; i++) {
       const glyph = glyphs[i];
@@ -25153,9 +24827,7 @@ class EmbeddedFont extends PDFFont {
     }
     const tag = [1, 2, 3, 4, 5, 6].map(i => String.fromCharCode((this.id.charCodeAt(i) || 73) + 17)).join('');
     const name = tag + '+' + this.font.postscriptName?.replaceAll(' ', '_');
-    const {
-      bbox
-    } = this.font;
+    const bbox = this.font.bbox;
     const descriptor = this.document.ref({
       Type: 'FontDescriptor',
       FontName: name,
@@ -25311,10 +24983,9 @@ var FontsMixin = {
     }
     if (typeof src === 'string' && this._registeredFonts[src]) {
       cacheKey = src;
-      ({
-        src,
-        family
-      } = this._registeredFonts[src]);
+      var _this$_registeredFont = this._registeredFonts[src];
+      src = _this$_registeredFont.src;
+      family = _this$_registeredFont.family;
     } else {
       cacheKey = family || src;
       if (typeof cacheKey !== 'string') {
@@ -25465,9 +25136,7 @@ class LineWrapper extends _events.EventEmitter {
       });
     });
     this.on('lastLine', options => {
-      const {
-        align
-      } = options;
+      const align = options.align;
       if (align === 'justify') {
         options.align = 'left';
       }
@@ -25565,16 +25234,12 @@ class LineWrapper extends _events.EventEmitter {
     let textWidth = 0;
     let wc = 0;
     let lc = 0;
-    let {
-      y
-    } = this.document;
+    let y = this.document.y;
     const emitLine = () => {
       options.textWidth = textWidth + this.wordSpacing * (wc - 1);
       options.wordCount = wc;
       options.lineWidth = this.lineWidth;
-      ({
-        y
-      } = this.document);
+      y = this.document.y;
       this.emit('line', buffer, options, this);
       return lc++;
     };
@@ -25682,9 +25347,7 @@ class LineWrapper extends _events.EventEmitter {
     return true;
   }
 }
-const {
-  number
-} = PDFObject;
+const number = PDFObject.number;
 function formatListLabel(n, listType) {
   if (listType === 'numbered') {
     return `${n}.`;
@@ -25765,10 +25428,8 @@ var TextMixin = {
   },
   boundsOfString(string, x, y, options) {
     options = this._initOptions(x, y, options);
-    ({
-      x,
-      y
-    } = this);
+    x = this.x;
+    y = this.y;
     const lineGap = options.lineGap ?? this._lineGap ?? 0;
     const lineHeight = this.currentLineHeight(true) + lineGap;
     let contentWidth = 0;
@@ -25856,10 +25517,8 @@ var TextMixin = {
     };
   },
   heightOfString(text, options) {
-    const {
-      x,
-      y
-    } = this;
+    const x = this.x,
+      y = this.y;
     options = this._initOptions(options);
     options.height = Infinity;
     const lineGap = options.lineGap || this._lineGap || 0;
@@ -25909,9 +25568,14 @@ var TextMixin = {
         let item, itemType, labelType, bodyType;
         if (options.structParent) {
           if (options.structTypes) {
-            [itemType, labelType, bodyType] = options.structTypes;
+            var _options$structTypes = options.structTypes;
+            itemType = _options$structTypes[0];
+            labelType = _options$structTypes[1];
+            bodyType = _options$structTypes[2];
           } else {
-            [itemType, labelType, bodyType] = ['LI', 'Lbl', 'LBody'];
+            itemType = 'LI';
+            labelType = 'Lbl';
+            bodyType = 'LBody';
           }
         }
         if (itemType) {
@@ -26149,7 +25813,9 @@ var TextMixin = {
       encoded = [];
       positions = [];
       for (let word of words) {
-        const [encodedWord, positionsWord] = this._font.encode(word, options.features);
+        const _this$_font$encode = this._font.encode(word, options.features),
+          encodedWord = _this$_font$encode[0],
+          positionsWord = _this$_font$encode[1];
         encoded = encoded.concat(encodedWord);
         positions = positions.concat(positionsWord);
         const space = {};
@@ -26162,7 +25828,9 @@ var TextMixin = {
         positions[positions.length - 1] = space;
       }
     } else {
-      [encoded, positions] = this._font.encode(text, options.features);
+      var _this$_font$encode2 = this._font.encode(text, options.features);
+      encoded = _this$_font$encode2[0];
+      positions = _this$_font$encode2[1];
     }
     const scale = this._fontSize / 1000;
     const commands = [];
@@ -26309,9 +25977,7 @@ class PNGImage {
       const val = this.image.transparency.grayscale;
       this.obj.data['Mask'] = [val, val];
     } else if (this.image.transparency.rgb) {
-      const {
-        rgb
-      } = this.image.transparency;
+      const rgb = this.image.transparency.rgb;
       const mask = [];
       for (let x of rgb) {
         mask.push(x, x);
@@ -26449,12 +26115,13 @@ var ImagesMixin = {
     if (this.page.xobjects[image.label] == null) {
       this.page.xobjects[image.label] = image.obj;
     }
-    let {
-      width,
-      height
-    } = image;
+    let _image = image,
+      width = _image.width,
+      height = _image.height;
     if (!ignoreOrientation && image.orientation > 4) {
-      [width, height] = [height, width];
+      var _ref3 = [height, width];
+      width = _ref3[0];
+      height = _ref3[1];
     }
     let w = options.width || width;
     let h = options.height || height;
@@ -26470,7 +26137,9 @@ var ImagesMixin = {
       w = width * options.scale;
       h = height * options.scale;
     } else if (options.fit) {
-      [bw, bh] = options.fit;
+      var _options$fit = options.fit;
+      bw = _options$fit[0];
+      bh = _options$fit[1];
       bp = bw / bh;
       ip = width / height;
       if (ip > bp) {
@@ -26481,7 +26150,9 @@ var ImagesMixin = {
         w = bh * ip;
       }
     } else if (options.cover) {
-      [bw, bh] = options.cover;
+      var _options$cover = options.cover;
+      bw = _options$cover[0];
+      bh = _options$cover[1];
       bp = bw / bh;
       ip = width / height;
       if (ip > bp) {
@@ -26678,7 +26349,11 @@ var AnnotationsMixin = {
   },
   _markup(x, y, w, h) {
     let options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-    const [x1, y1, x2, y2] = this._convertRect(x, y, w, h);
+    const _this$_convertRect = this._convertRect(x, y, w, h),
+      x1 = _this$_convertRect[0],
+      y1 = _this$_convertRect[1],
+      x2 = _this$_convertRect[2],
+      y2 = _this$_convertRect[3];
     options.QuadPoints = [x1, y2, x2, y2, x1, y1, x2, y1];
     options.Contents = new String();
     return this.annotate(x, y, w, h, options);
@@ -26746,7 +26421,13 @@ var AnnotationsMixin = {
     let y2 = y1;
     y1 += h;
     let x2 = x1 + w;
-    const [m0, m1, m2, m3, m4, m5] = this._ctm;
+    const _this$_ctm = this._ctm,
+      m0 = _this$_ctm[0],
+      m1 = _this$_ctm[1],
+      m2 = _this$_ctm[2],
+      m3 = _this$_ctm[3],
+      m4 = _this$_ctm[4],
+      m5 = _this$_ctm[5];
     x1 = m0 * x1 + m2 * y1 + m4;
     y1 = m1 * x1 + m3 * y1 + m5;
     x2 = m0 * x2 + m2 * y2 + m4;
@@ -26892,10 +26573,8 @@ class PDFStructureElement {
   }
   _addContentToParentTree(content) {
     content.refs.forEach(_ref => {
-      let {
-        pageRef,
-        mcid
-      } = _ref;
+      let pageRef = _ref.pageRef,
+        mcid = _ref.mcid;
       const pageStructParents = this.document.getStructParentTree().get(pageRef.data.StructParents);
       pageStructParents[mcid] = this.dictionary;
     });
@@ -26971,10 +26650,8 @@ class PDFStructureElement {
     }
     if (child instanceof PDFStructureContent) {
       child.refs.forEach(_ref2 => {
-        let {
-          pageRef,
-          mcid
-        } = _ref2;
+        let pageRef = _ref2.pageRef,
+          mcid = _ref2.mcid;
         if (!this.dictionary.data.Pg) {
           this.dictionary.data.Pg = pageRef;
         }
@@ -27521,10 +27198,9 @@ var AttachmentsMixin = {
         if (!data) {
           throw new Error(`Could not read contents of file at filepath ${src}`);
         }
-        const {
-          birthtime,
-          ctime
-        } = fs.statSync(src);
+        const _fs$statSync = fs.statSync(src),
+          birthtime = _fs$statSync.birthtime,
+          ctime = _fs$statSync.ctime;
         refBody.Params.CreationDate = birthtime;
         refBody.Params.ModDate = ctime;
       }
@@ -27720,11 +27396,11 @@ function normalizedDefaultStyle(defaultStyleInternal) {
     text: defaultStyle
   };
   const defaultRowStyle = Object.fromEntries(Object.entries(defaultStyle).filter(_ref => {
-    let [k] = _ref;
+    let k = _ref[0];
     return ROW_FIELDS.includes(k);
   }));
   const defaultColStyle = Object.fromEntries(Object.entries(defaultStyle).filter(_ref2 => {
-    let [k] = _ref2;
+    let k = _ref2[0];
     return COLUMN_FIELDS.includes(k);
   }));
   defaultStyle.padding = normalizeSides(defaultStyle.padding);
@@ -27798,11 +27474,10 @@ function normalizeTable() {
     y: doc.sizeToPoint(opts.position?.y, doc.y)
   };
   this._maxWidth = doc.sizeToPoint(opts.maxWidth, doc.page.width - doc.page.margins.right - this._position.x);
-  const {
-    defaultStyle,
-    defaultColStyle,
-    defaultRowStyle
-  } = normalizedDefaultStyle(opts.defaultStyle);
+  const _normalizedDefaultSty = normalizedDefaultStyle(opts.defaultStyle),
+    defaultStyle = _normalizedDefaultSty.defaultStyle,
+    defaultColStyle = _normalizedDefaultSty.defaultColStyle,
+    defaultRowStyle = _normalizedDefaultSty.defaultRowStyle;
   this._defaultStyle = defaultStyle;
   let colStyle;
   if (opts.columnStyles) {
@@ -27999,10 +27674,9 @@ function measureCell(cell, rowHeight) {
   const textAllocatedWidth = cellWidth - cell.padding.left - cell.padding.right;
   const textAllocatedHeight = cellHeight - cell.padding.top - cell.padding.bottom;
   const rotation = cell.textOptions.rotation ?? 0;
-  const {
-    width: textMaxWidth,
-    height: textMaxHeight
-  } = computeBounds(rotation, textAllocatedWidth, textAllocatedHeight);
+  const _computeBounds = computeBounds(rotation, textAllocatedWidth, textAllocatedHeight),
+    textMaxWidth = _computeBounds.width,
+    textMaxHeight = _computeBounds.height;
   const textOptions = {
     align: cell.align.x,
     ellipsis: true,
@@ -28240,7 +27914,8 @@ function renderCellText(cell) {
 }
 function renderBorder(border, borderColor, x, y, width, height, mask) {
   border = Object.fromEntries(Object.entries(border).map(_ref => {
-    let [k, v] = _ref;
+    let k = _ref[0],
+      v = _ref[1];
     return [k, mask && !mask[k] ? 0 : v];
   }));
   const doc = this.document;
@@ -28285,10 +27960,9 @@ class PDFTable {
     row = Array.from(row);
     row = normalizeRow.call(this, row, this._currRowIndex);
     if (this._currRowIndex === 0) ensure.call(this, row);
-    const {
-      newPage,
-      toRender
-    } = measure.call(this, row, this._currRowIndex);
+    const _measure$call = measure.call(this, row, this._currRowIndex),
+      newPage = _measure$call.newPage,
+      toRender = _measure$call.toRender;
     if (newPage) this.document.continueOnNewPage();
     const yPos = renderRow.call(this, toRender, this._currRowIndex);
     this.document.x = this._position.x;
@@ -28503,9 +28177,7 @@ class PDFDocument extends _stream.default.Readable {
   }
   addPage(options) {
     if (options == null) {
-      ({
-        options
-      } = this);
+      options = this.options;
     }
     if (!this.options.bufferPages) {
       this.flushPages();
@@ -32586,7 +32258,7 @@ module.exports = __webpack_require__(980).BrotliDecompressBuffer;
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 /* provided dependency */ var process = __webpack_require__(9964);
 
 /* eslint camelcase: "off" */
@@ -33750,10 +33422,10 @@ var applyBind = __webpack_require__(8619);
 
 module.exports = function callBind(originalFunction) {
 	var func = callBindBasic(arguments);
-	var adjustedLength = originalFunction.length - (arguments.length - 1);
+	var adjustedLength = 1 + originalFunction.length - (arguments.length - 1);
 	return setFunctionLength(
 		func,
-		1 + (adjustedLength > 0 ? adjustedLength : 0),
+		adjustedLength > 0 ? adjustedLength : 0,
 		true
 	);
 };
@@ -33797,7 +33469,7 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 /***/ 1613
 (module, __unused_webpack_exports, __webpack_require__) {
 
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 var clone = (function() {
 'use strict';
 
@@ -36049,7 +35721,7 @@ var getProto = __webpack_require__(7106);
 var toStr = callBound('Object.prototype.toString');
 var fnToStr = callBound('Function.prototype.toString');
 
-var getGeneratorFunction = __webpack_require__(3011);
+var getGeneratorFunction = __webpack_require__(9294).c;
 
 /** @type {import('.')} */
 module.exports = function isGeneratorFunction(fn) {
@@ -43175,7 +42847,7 @@ module.exports = function regexTester(regex) {
 /***/ 1733
 (__unused_webpack_module, exports, __webpack_require__) {
 
-/* provided dependency */ var Buffer = __webpack_require__(783)["Buffer"];
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 ;(function (sax) {
   // wrapper for non-node envs
   sax.parser = function (strict, opt) {
@@ -43241,9 +42913,13 @@ module.exports = function regexTester(regex) {
     clearBuffers(parser)
     parser.q = parser.c = ''
     parser.bufferCheckPosition = sax.MAX_BUFFER_LENGTH
+    parser.encoding = null;
     parser.opt = opt || {}
     parser.opt.lowercase = parser.opt.lowercase || parser.opt.lowercasetags
     parser.looseCase = parser.opt.lowercase ? 'toLowerCase' : 'toUpperCase'
+    parser.opt.maxEntityCount = parser.opt.maxEntityCount || 512
+    parser.opt.maxEntityDepth = parser.opt.maxEntityDepth || 4
+    parser.entityCount = parser.entityDepth = 0
     parser.tags = []
     parser.closed = parser.closedRoot = parser.sawRoot = false
     parser.tag = parser.error = null
@@ -43382,6 +43058,39 @@ module.exports = function regexTester(regex) {
     return new SAXStream(strict, opt)
   }
 
+  function determineBufferEncoding(data, isEnd) {
+    // BOM-based detection is the most reliable signal when present.
+    if (data.length >= 2) {
+      if (data[0] === 0xff && data[1] === 0xfe) {
+        return 'utf-16le'
+      }
+
+      if (data[0] === 0xfe && data[1] === 0xff) {
+        return 'utf-16be'
+      }
+    }
+
+    if (data.length >= 3 && data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) {
+      return 'utf8'
+    }
+
+    if (data.length >= 4) {
+      // XML documents without a BOM still start with "<?xml", which is enough
+      // to distinguish UTF-16LE/BE from UTF-8 by looking at the zero bytes.
+      if (data[0] === 0x3c && data[1] === 0x00 && data[2] === 0x3f && data[3] === 0x00) {
+        return 'utf-16le'
+      }
+
+      if (data[0] === 0x00 && data[1] === 0x3c && data[2] === 0x00 && data[3] === 0x3f) {
+        return 'utf-16be'
+      }
+
+      return 'utf8'
+    }
+
+    return isEnd ? 'utf8' : null
+  }
+
   function SAXStream(strict, opt) {
     if (!(this instanceof SAXStream)) {
       return new SAXStream(strict, opt)
@@ -43408,7 +43117,7 @@ module.exports = function regexTester(regex) {
     }
 
     this._decoder = null
-
+    this._decoderBuffer = null
     streamWraps.forEach(function (ev) {
       Object.defineProperty(me, 'on' + ev, {
         get: function () {
@@ -43434,16 +43143,47 @@ module.exports = function regexTester(regex) {
     },
   })
 
+  SAXStream.prototype._decodeBuffer = function (data, isEnd) {
+    if (this._decoderBuffer) {
+      // Keep incomplete leading bytes until we have enough data to infer the
+      // stream encoding, then decode the buffered prefix together with the next chunk.
+      data = Buffer.concat([this._decoderBuffer, data])
+      this._decoderBuffer = null
+    }
+
+    if (!this._decoder) {
+      var encoding = determineBufferEncoding(data, isEnd)
+      if (!encoding) {
+        // A very short first chunk may not contain enough bytes to detect the
+        // encoding yet, so defer decoding until the next write/end call.
+        this._decoderBuffer = data
+        return ''
+      }
+
+      // Store the detected transport encoding so strict mode can compare it
+      // with the optional encoding declared in the XML prolog later on.
+      this._parser.encoding = encoding
+      this._decoder = new TextDecoder(encoding)
+    }
+
+    return this._decoder.decode(data, { stream: !isEnd })
+  }
+
   SAXStream.prototype.write = function (data) {
     if (
       typeof Buffer === 'function' &&
       typeof Buffer.isBuffer === 'function' &&
       Buffer.isBuffer(data)
     ) {
-      if (!this._decoder) {
-        this._decoder = new TextDecoder('utf8')
+      data = this._decodeBuffer(data, false)
+    } else if (this._decoderBuffer) {
+      // Flush any buffered binary prefix before handling a string chunk.
+      // This only matters if the caller mixes Buffer and string writes (used in test).
+      var remaining = this._decodeBuffer(Buffer.alloc(0), true)
+      if (remaining) {
+        this._parser.write(remaining)
+        this.emit('data', remaining)
       }
-      data = this._decoder.decode(data, { stream: true })
     }
 
     this._parser.write(data.toString())
@@ -43456,7 +43196,13 @@ module.exports = function regexTester(regex) {
       this.write(chunk)
     }
     // Flush any remaining decoded data from the TextDecoder
-    if (this._decoder) {
+    if (this._decoderBuffer) {
+      var finalChunk = this._decodeBuffer(Buffer.alloc(0), true)
+      if (finalChunk) {
+        this._parser.write(finalChunk)
+        this.emit('data', finalChunk)
+      }
+    } else if (this._decoder) {
       var remaining = this._decoder.decode()
       if (remaining) {
         this._parser.write(remaining)
@@ -43847,6 +43593,59 @@ module.exports = function regexTester(regex) {
 
   function emit(parser, event, data) {
     parser[event] && parser[event](data)
+  }
+
+  function getDeclaredEncoding(body) {
+    var match = body && body.match(/(?:^|\s)encoding\s*=\s*(['"])([^'"]+)\1/i)
+    return match ? match[2] : null
+  }
+
+  function normalizeEncodingName(encoding) {
+    if (!encoding) {
+      return null
+    }
+
+    return encoding.toLowerCase().replace(/[^a-z0-9]/g, '')
+  }
+
+  function encodingsMatch(detectedEncoding, declaredEncoding) {
+    const detected = normalizeEncodingName(detectedEncoding)
+    const declared = normalizeEncodingName(declaredEncoding)
+
+    if (!detected || !declared) {
+      return true
+    }
+
+    if (declared === 'utf16') {
+      return detected === 'utf16le' || detected === 'utf16be'
+    }
+
+    return detected === declared
+  }
+
+  function validateXmlDeclarationEncoding(parser, data) {
+    if (
+      !parser.strict ||
+      !parser.encoding ||
+      !data ||
+      data.name !== 'xml'
+    ) {
+      return
+    }
+
+    var declaredEncoding = getDeclaredEncoding(data.body)
+    if (
+      declaredEncoding &&
+      !encodingsMatch(parser.encoding, declaredEncoding)
+    ) {
+      strictFail(
+        parser,
+        'XML declaration encoding ' +
+          declaredEncoding +
+          ' does not match detected stream encoding ' +
+          parser.encoding.toUpperCase()
+      )
+    }
   }
 
   function emitNode(parser, nodeType, data) {
@@ -44554,10 +44353,12 @@ module.exports = function regexTester(regex) {
 
         case S.PROC_INST_ENDING:
           if (c === '>') {
-            emitNode(parser, 'onprocessinginstruction', {
+            const procInstEndData = {
               name: parser.procInstName,
               body: parser.procInstBody,
-            })
+            }
+            validateXmlDeclarationEncoding(parser, procInstEndData)
+            emitNode(parser, 'onprocessinginstruction', procInstEndData)
             parser.procInstName = parser.procInstBody = ''
             parser.state = S.TEXT
           } else {
@@ -44789,9 +44590,24 @@ module.exports = function regexTester(regex) {
               parser.opt.unparsedEntities &&
               !Object.values(sax.XML_ENTITIES).includes(parsedEntity)
             ) {
+              if ((parser.entityCount += 1) > parser.opt.maxEntityCount) {
+                error(
+                  parser,
+                  'Parsed entity count exceeds max entity count'
+                )
+              }
+
+              if ((parser.entityDepth += 1) > parser.opt.maxEntityDepth) {
+                error(
+                  parser,
+                  'Parsed entity depth exceeds max entity depth'
+                )
+              }
+
               parser.entity = ''
               parser.state = returnState
               parser.write(parsedEntity)
+              parser.entityDepth -= 1
             } else {
               parser[buffer] += parsedEntity
               parser.entity = ''
@@ -49646,6 +49462,9 @@ var typedArrays = availableTypedArrays();
 
 var $slice = callBound('String.prototype.slice');
 
+/** @import { BoundSet, BoundSlice, Cache, Getter } from './types' */
+/** @import { TypedArrayName } from '.' */
+
 /** @type {<T = unknown>(array: readonly T[], value: unknown) => number} */
 var $indexOf = callBound('Array.prototype.indexOf', true) || function indexOf(array, value) {
 	for (var i = 0; i < array.length; i += 1) {
@@ -49656,8 +49475,7 @@ var $indexOf = callBound('Array.prototype.indexOf', true) || function indexOf(ar
 	return -1;
 };
 
-/** @typedef {import('./types').Getter} Getter */
-/** @type {import('./types').Cache} */
+/** @type {Cache} */
 var cache = { __proto__: null };
 if (hasToStringTag && gOPD && getProto) {
 	forEach(typedArrays, function (typedArray) {
@@ -49674,7 +49492,8 @@ if (hasToStringTag && gOPD && getProto) {
 			if (descriptor && descriptor.get) {
 				var bound = callBind(descriptor.get);
 				cache[
-					/** @type {`$${import('.').TypedArrayName}`} */ ('$' + typedArray)
+					/** @type {`$${TypedArrayName}`} */
+					('$' + typedArray)
 				] = bound;
 			}
 		}
@@ -49684,62 +49503,72 @@ if (hasToStringTag && gOPD && getProto) {
 		var arr = new g[typedArray]();
 		var fn = arr.slice || arr.set;
 		if (fn) {
-			var bound = /** @type {import('./types').BoundSlice | import('./types').BoundSet} */ (
+			var bound = /** @type {BoundSlice | BoundSet} */ (
 				// @ts-expect-error TODO FIXME
 				callBind(fn)
 			);
 			cache[
-				/** @type {`$${import('.').TypedArrayName}`} */ ('$' + typedArray)
+				/** @type {`$${TypedArrayName}`} */
+				('$' + typedArray)
 			] = bound;
 		}
 	});
 }
 
-/** @type {(value: object) => false | import('.').TypedArrayName} */
-var tryTypedArrays = function tryAllTypedArrays(value) {
-	/** @type {ReturnType<typeof tryAllTypedArrays>} */ var found = false;
+/** @type {(value: object) => false | TypedArrayName} */
+function tryTypedArrays(value) {
+	/** @type {ReturnType<typeof tryTypedArrays>} */ var found = false;
 	forEach(
-		/** @type {Record<`\$${import('.').TypedArrayName}`, Getter>} */ (cache),
-		/** @type {(getter: Getter, name: `\$${import('.').TypedArrayName}`) => void} */
+		/** @type {Record<`$${TypedArrayName}`, Getter>} */ (cache),
+		/** @param {Getter} getter @param {`$${TypedArrayName}`} typedArray */
 		function (getter, typedArray) {
 			if (!found) {
 				try {
 					// @ts-expect-error a throw is fine here
 					if ('$' + getter(value) === typedArray) {
-						found = /** @type {import('.').TypedArrayName} */ ($slice(typedArray, 1));
+						found = /** @type {TypedArrayName} */ ($slice(typedArray, 1));
 					}
 				} catch (e) { /**/ }
 			}
 		}
 	);
 	return found;
-};
+}
 
-/** @type {(value: object) => false | import('.').TypedArrayName} */
-var trySlices = function tryAllSlices(value) {
-	/** @type {ReturnType<typeof tryAllSlices>} */ var found = false;
+/** @type {(value: object) => false | TypedArrayName} */
+function trySlices(value) {
+	/** @type {ReturnType<typeof trySlices>} */ var found = false;
 	forEach(
-		/** @type {Record<`\$${import('.').TypedArrayName}`, Getter>} */(cache),
-		/** @type {(getter: Getter, name: `\$${import('.').TypedArrayName}`) => void} */ function (getter, name) {
+		/** @type {Record<`$${TypedArrayName}`, Getter>} */(cache),
+		/** @param {Getter} getter @param {`$${TypedArrayName}`} name */ function (getter, name) {
 			if (!found) {
 				try {
 					// @ts-expect-error a throw is fine here
 					getter(value);
-					found = /** @type {import('.').TypedArrayName} */ ($slice(name, 1));
+					found = /** @type {TypedArrayName} */ ($slice(name, 1));
 				} catch (e) { /**/ }
 			}
 		}
 	);
 	return found;
-};
+}
 
-/** @type {import('.')} */
+/** @type {(tag: unknown) => tag is typeof typedArrays[number]} */
+function isTATag(tag) {
+	return $indexOf(typedArrays, tag) > -1;
+}
+
+/**
+ * @type {import('.')}
+ * @param {unknown} value
+ */
 module.exports = function whichTypedArray(value) {
-	if (!value || typeof value !== 'object') { return false; }
+	if (!value || typeof value !== 'object') {
+		return false;
+	}
 	if (!hasToStringTag) {
-		/** @type {string} */
 		var tag = $slice($toString(value), 8, -1);
-		if ($indexOf(typedArrays, tag) > -1) {
+		if (isTATag(tag)) {
 			return tag;
 		}
 		if (tag !== 'Object') {
@@ -49755,7 +49584,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 1116
+/***/ 5468
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
@@ -49961,7 +49790,7 @@ if (DESCRIPTORS && !hasOwn(TypedArrayPrototype, TO_STRING_TAG)) {
     }
   });
   for (NAME in TypedArrayConstructorsList) if (globalThis[NAME]) {
-    createNonEnumerableProperty(globalThis[NAME], TYPED_ARRAY_TAG, NAME);
+    createNonEnumerableProperty(globalThis[NAME].prototype, TYPED_ARRAY_TAG, NAME);
   }
 }
 module.exports = {
@@ -50054,7 +49883,7 @@ var setAggressivenessLevel = function (object, constant) {
 };
 
 module.exports = function (options) {
-  if (typeof options == 'object') {
+  if (options && typeof options == 'object') {
     setAggressivenessLevel(options.useNative, isForced.NATIVE);
     setAggressivenessLevel(options.usePolyfill, isForced.POLYFILL);
     setAggressivenessLevel(options.useFeatureDetection, null);
@@ -50107,6 +49936,35 @@ module.exports = function (argument) {
 
 /***/ },
 
+/***/ 1825
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var wellKnownSymbol = __webpack_require__(8663);
+var create = __webpack_require__(4860);
+var defineProperty = (__webpack_require__(2333).f);
+
+var UNSCOPABLES = wellKnownSymbol('unscopables');
+var ArrayPrototype = Array.prototype;
+
+// Array.prototype[@@unscopables]
+// https://tc39.es/ecma262/#sec-array.prototype-@@unscopables
+if (ArrayPrototype[UNSCOPABLES] === undefined) {
+  defineProperty(ArrayPrototype, UNSCOPABLES, {
+    configurable: true,
+    value: create(null)
+  });
+}
+
+// add a key to Array.prototype[@@unscopables]
+module.exports = function (key) {
+  ArrayPrototype[UNSCOPABLES][key] = true;
+};
+
+
+/***/ },
+
 /***/ 2091
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -50146,6 +50004,48 @@ module.exports = function fill(value /* , start = 0, end = @length */) {
   var endPos = end === undefined ? length : toAbsoluteIndex(end, length);
   while (endPos > index) O[index++] = value;
   return O;
+};
+
+
+/***/ },
+
+/***/ 789
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var toIndexedObject = __webpack_require__(5137);
+var toAbsoluteIndex = __webpack_require__(4918);
+var lengthOfArrayLike = __webpack_require__(4730);
+
+// `Array.prototype.{ indexOf, includes }` methods implementation
+var createMethod = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIndexedObject($this);
+    var length = lengthOfArrayLike(O);
+    if (length === 0) return !IS_INCLUDES && -1;
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare -- NaN check
+    if (IS_INCLUDES && el !== el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare -- NaN check
+      if (value !== value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) {
+      if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+module.exports = {
+  // `Array.prototype.includes` method
+  // https://tc39.es/ecma262/#sec-array.prototype.includes
+  includes: createMethod(true),
+  // `Array.prototype.indexOf` method
+  // https://tc39.es/ecma262/#sec-array.prototype.indexof
+  indexOf: createMethod(false)
 };
 
 
@@ -50263,6 +50163,31 @@ module.exports = TO_STRING_TAG_SUPPORT ? classofRaw : function (it) {
     : CORRECT_ARGUMENTS ? classofRaw(O)
     // ES3 arguments fallback
     : (result = classofRaw(O)) === 'Object' && isCallable(O.callee) ? 'Arguments' : result;
+};
+
+
+/***/ },
+
+/***/ 8032
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var hasOwn = __webpack_require__(6341);
+var ownKeys = __webpack_require__(7523);
+var getOwnPropertyDescriptorModule = __webpack_require__(423);
+var definePropertyModule = __webpack_require__(2333);
+
+module.exports = function (target, source, exceptions) {
+  var keys = ownKeys(source);
+  var defineProperty = definePropertyModule.f;
+  var getOwnPropertyDescriptor = getOwnPropertyDescriptorModule.f;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (!hasOwn(target, key) && !(exceptions && hasOwn(exceptions, key))) {
+      defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+    }
+  }
 };
 
 
@@ -50430,6 +50355,25 @@ module.exports = function (it) {
 
 /***/ },
 
+/***/ 2555
+(module) {
+
+"use strict";
+
+// IE8- don't enum bug keys
+module.exports = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
+
+
+/***/ },
+
 /***/ 5337
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -50521,6 +50465,69 @@ module.exports = !!webkit && +webkit[1];
 
 /***/ },
 
+/***/ 3762
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var globalThis = __webpack_require__(7756);
+var getOwnPropertyDescriptor = (__webpack_require__(423).f);
+var createNonEnumerableProperty = __webpack_require__(5719);
+var defineBuiltIn = __webpack_require__(4092);
+var defineGlobalProperty = __webpack_require__(7309);
+var copyConstructorProperties = __webpack_require__(8032);
+var isForced = __webpack_require__(5888);
+
+/*
+  options.target         - name of the target object
+  options.global         - target is the global object
+  options.stat           - export as static methods of target
+  options.proto          - export as prototype methods of target
+  options.real           - real prototype method for the `pure` version
+  options.forced         - export even if the native feature is available
+  options.bind           - bind methods to the target, required for the `pure` version
+  options.wrap           - wrap constructors to preventing global pollution, required for the `pure` version
+  options.unsafe         - use the simple assignment of property instead of delete + defineProperty
+  options.sham           - add a flag to not completely full polyfills
+  options.enumerable     - export as enumerable property
+  options.dontCallGetSet - prevent calling a getter on target
+  options.name           - the .name of the function if it does not match the key
+*/
+module.exports = function (options, source) {
+  var TARGET = options.target;
+  var GLOBAL = options.global;
+  var STATIC = options.stat;
+  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+  if (GLOBAL) {
+    target = globalThis;
+  } else if (STATIC) {
+    target = globalThis[TARGET] || defineGlobalProperty(TARGET, {});
+  } else {
+    target = globalThis[TARGET] && globalThis[TARGET].prototype;
+  }
+  if (target) for (key in source) {
+    sourceProperty = source[key];
+    if (options.dontCallGetSet) {
+      descriptor = getOwnPropertyDescriptor(target, key);
+      targetProperty = descriptor && descriptor.value;
+    } else targetProperty = target[key];
+    FORCED = isForced(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
+    // contained in target
+    if (!FORCED && targetProperty !== undefined) {
+      if (typeof sourceProperty == typeof targetProperty) continue;
+      copyConstructorProperties(sourceProperty, targetProperty);
+    }
+    // add a flag to not completely full polyfills
+    if (options.sham || (targetProperty && targetProperty.sham)) {
+      createNonEnumerableProperty(sourceProperty, 'sham', true);
+    }
+    defineBuiltIn(target, key, sourceProperty, options);
+  }
+};
+
+
+/***/ },
+
 /***/ 299
 (module) {
 
@@ -50546,7 +50553,7 @@ var fails = __webpack_require__(299);
 
 module.exports = !fails(function () {
   // eslint-disable-next-line es/no-function-prototype-bind -- safe
-  var test = (function () { /* empty */ }).bind();
+  var test = function () { /* empty */ }.bind();
   // eslint-disable-next-line no-prototype-builtins -- safe
   return typeof test != 'function' || test.hasOwnProperty('prototype');
 });
@@ -50584,7 +50591,7 @@ var getDescriptor = DESCRIPTORS && Object.getOwnPropertyDescriptor;
 
 var EXISTS = hasOwn(FunctionPrototype, 'name');
 // additional protection from minified / mangled / dropped function names
-var PROPER = EXISTS && (function something() { /* empty */ }).name === 'something';
+var PROPER = EXISTS && function something() { /* empty */ }.name === 'something';
 var CONFIGURABLE = EXISTS && (!DESCRIPTORS || (DESCRIPTORS && getDescriptor(FunctionPrototype, 'name').configurable));
 
 module.exports = {
@@ -50744,6 +50751,18 @@ module.exports = {};
 
 /***/ },
 
+/***/ 4329
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var getBuiltIn = __webpack_require__(7139);
+
+module.exports = getBuiltIn('document', 'documentElement');
+
+
+/***/ },
+
 /***/ 7657
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -50760,6 +50779,30 @@ module.exports = !DESCRIPTORS && !fails(function () {
     get: function () { return 7; }
   }).a !== 7;
 });
+
+
+/***/ },
+
+/***/ 2203
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var uncurryThis = __webpack_require__(1212);
+var fails = __webpack_require__(299);
+var classof = __webpack_require__(8420);
+
+var $Object = Object;
+var split = uncurryThis(''.split);
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+module.exports = fails(function () {
+  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+  // eslint-disable-next-line no-prototype-builtins -- safe
+  return !$Object('z').propertyIsEnumerable(0);
+}) ? function (it) {
+  return classof(it) === 'String' ? split(it, '') : $Object(it);
+} : $Object;
 
 
 /***/ },
@@ -51106,6 +51149,128 @@ module.exports = Math.trunc || function trunc(x) {
 
 /***/ },
 
+/***/ 4860
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+/* global ActiveXObject -- old IE, WSH */
+var anObject = __webpack_require__(2091);
+var definePropertiesModule = __webpack_require__(2197);
+var enumBugKeys = __webpack_require__(2555);
+var hiddenKeys = __webpack_require__(2993);
+var html = __webpack_require__(4329);
+var documentCreateElement = __webpack_require__(2283);
+var sharedKey = __webpack_require__(7099);
+
+var GT = '>';
+var LT = '<';
+var PROTOTYPE = 'prototype';
+var SCRIPT = 'script';
+var IE_PROTO = sharedKey('IE_PROTO');
+
+var EmptyConstructor = function () { /* empty */ };
+
+var scriptTag = function (content) {
+  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+};
+
+// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+var NullProtoObjectViaActiveX = function (activeXDocument) {
+  activeXDocument.write(scriptTag(''));
+  activeXDocument.close();
+  var temp = activeXDocument.parentWindow.Object;
+  // eslint-disable-next-line no-useless-assignment -- avoid memory leak
+  activeXDocument = null;
+  return temp;
+};
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var NullProtoObjectViaIFrame = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = documentCreateElement('iframe');
+  var JS = 'java' + SCRIPT + ':';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  html.appendChild(iframe);
+  // https://github.com/zloirock/core-js/issues/475
+  iframe.src = String(JS);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(scriptTag('document.F=Object'));
+  iframeDocument.close();
+  return iframeDocument.F;
+};
+
+// Check for document.domain and active x support
+// No need to use active x approach when document.domain is not set
+// see https://github.com/es-shims/es5-shim/issues/150
+// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+// avoid IE GC bug
+var activeXDocument;
+var NullProtoObject = function () {
+  try {
+    activeXDocument = new ActiveXObject('htmlfile');
+  } catch (error) { /* ignore */ }
+  NullProtoObject = typeof document != 'undefined'
+    ? document.domain && activeXDocument
+      ? NullProtoObjectViaActiveX(activeXDocument) // old IE
+      : NullProtoObjectViaIFrame()
+    : NullProtoObjectViaActiveX(activeXDocument); // WSH
+  var length = enumBugKeys.length;
+  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+  return NullProtoObject();
+};
+
+hiddenKeys[IE_PROTO] = true;
+
+// `Object.create` method
+// https://tc39.es/ecma262/#sec-object.create
+// eslint-disable-next-line es/no-object-create -- safe
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    EmptyConstructor[PROTOTYPE] = anObject(O);
+    result = new EmptyConstructor();
+    EmptyConstructor[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = NullProtoObject();
+  return Properties === undefined ? result : definePropertiesModule.f(result, Properties);
+};
+
+
+/***/ },
+
+/***/ 2197
+(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var DESCRIPTORS = __webpack_require__(5144);
+var V8_PROTOTYPE_DEFINE_BUG = __webpack_require__(2538);
+var definePropertyModule = __webpack_require__(2333);
+var anObject = __webpack_require__(2091);
+var toIndexedObject = __webpack_require__(5137);
+var objectKeys = __webpack_require__(9428);
+
+// `Object.defineProperties` method
+// https://tc39.es/ecma262/#sec-object.defineproperties
+// eslint-disable-next-line es/no-object-defineproperties -- safe
+exports.f = DESCRIPTORS && !V8_PROTOTYPE_DEFINE_BUG ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var props = toIndexedObject(Properties);
+  var keys = objectKeys(Properties);
+  var length = keys.length;
+  var index = 0;
+  var key;
+  while (length > index) definePropertyModule.f(O, key = keys[index++], props[key]);
+  return O;
+};
+
+
+/***/ },
+
 /***/ 2333
 (__unused_webpack_module, exports, __webpack_require__) {
 
@@ -51158,6 +51323,68 @@ exports.f = DESCRIPTORS ? V8_PROTOTYPE_DEFINE_BUG ? function defineProperty(O, P
 
 /***/ },
 
+/***/ 423
+(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var DESCRIPTORS = __webpack_require__(5144);
+var call = __webpack_require__(8993);
+var propertyIsEnumerableModule = __webpack_require__(4961);
+var createPropertyDescriptor = __webpack_require__(8264);
+var toIndexedObject = __webpack_require__(5137);
+var toPropertyKey = __webpack_require__(1413);
+var hasOwn = __webpack_require__(6341);
+var IE8_DOM_DEFINE = __webpack_require__(7657);
+
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// `Object.getOwnPropertyDescriptor` method
+// https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
+exports.f = DESCRIPTORS ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+  O = toIndexedObject(O);
+  P = toPropertyKey(P);
+  if (IE8_DOM_DEFINE) try {
+    return $getOwnPropertyDescriptor(O, P);
+  } catch (error) { /* empty */ }
+  if (hasOwn(O, P)) return createPropertyDescriptor(!call(propertyIsEnumerableModule.f, O, P), O[P]);
+};
+
+
+/***/ },
+
+/***/ 5412
+(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var internalObjectKeys = __webpack_require__(3120);
+var enumBugKeys = __webpack_require__(2555);
+
+var hiddenKeys = enumBugKeys.concat('length', 'prototype');
+
+// `Object.getOwnPropertyNames` method
+// https://tc39.es/ecma262/#sec-object.getownpropertynames
+// eslint-disable-next-line es/no-object-getownpropertynames -- safe
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return internalObjectKeys(O, hiddenKeys);
+};
+
+
+/***/ },
+
+/***/ 4073
+(__unused_webpack_module, exports) {
+
+"use strict";
+
+// eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
+exports.f = Object.getOwnPropertySymbols;
+
+
+/***/ },
+
 /***/ 8607
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -51196,6 +51423,75 @@ module.exports = CORRECT_PROTOTYPE_GETTER ? $Object.getPrototypeOf : function (O
 var uncurryThis = __webpack_require__(1212);
 
 module.exports = uncurryThis({}.isPrototypeOf);
+
+
+/***/ },
+
+/***/ 3120
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var uncurryThis = __webpack_require__(1212);
+var hasOwn = __webpack_require__(6341);
+var toIndexedObject = __webpack_require__(5137);
+var indexOf = (__webpack_require__(789).indexOf);
+var hiddenKeys = __webpack_require__(2993);
+
+var push = uncurryThis([].push);
+
+module.exports = function (object, names) {
+  var O = toIndexedObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) !hasOwn(hiddenKeys, key) && hasOwn(O, key) && push(result, key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (hasOwn(O, key = names[i++])) {
+    ~indexOf(result, key) || push(result, key);
+  }
+  return result;
+};
+
+
+/***/ },
+
+/***/ 9428
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var internalObjectKeys = __webpack_require__(3120);
+var enumBugKeys = __webpack_require__(2555);
+
+// `Object.keys` method
+// https://tc39.es/ecma262/#sec-object.keys
+// eslint-disable-next-line es/no-object-keys -- safe
+module.exports = Object.keys || function keys(O) {
+  return internalObjectKeys(O, enumBugKeys);
+};
+
+
+/***/ },
+
+/***/ 4961
+(__unused_webpack_module, exports) {
+
+"use strict";
+
+var $propertyIsEnumerable = {}.propertyIsEnumerable;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// Nashorn ~ JDK8 bug
+var NASHORN_BUG = getOwnPropertyDescriptor && !$propertyIsEnumerable.call({ 1: 2 }, 1);
+
+// `Object.prototype.propertyIsEnumerable` method implementation
+// https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
+exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+  var descriptor = getOwnPropertyDescriptor(this, V);
+  return !!descriptor && descriptor.enumerable;
+} : $propertyIsEnumerable;
 
 
 /***/ },
@@ -51261,6 +51557,29 @@ module.exports = function (input, pref) {
 
 /***/ },
 
+/***/ 7523
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var getBuiltIn = __webpack_require__(7139);
+var uncurryThis = __webpack_require__(1212);
+var getOwnPropertyNamesModule = __webpack_require__(5412);
+var getOwnPropertySymbolsModule = __webpack_require__(4073);
+var anObject = __webpack_require__(2091);
+
+var concat = uncurryThis([].concat);
+
+// all object keys, includes non-enumerable and symbols
+module.exports = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
+  var keys = getOwnPropertyNamesModule.f(anObject(it));
+  var getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
+  return getOwnPropertySymbols ? concat(keys, getOwnPropertySymbols(it)) : keys;
+};
+
+
+/***/ },
+
 /***/ 5034
 (module, __unused_webpack_exports, __webpack_require__) {
 
@@ -51310,10 +51629,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.48.0',
+  version: '3.49.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2013–2025 Denis Pushkarev (zloirock.ru), 2025–2026 CoreJS Company (core-js.io). All rights reserved.',
-  license: 'https://github.com/zloirock/core-js/blob/v3.48.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.49.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -51398,6 +51717,22 @@ module.exports = function (argument) {
   if (typeof prim == 'number') throw new $TypeError("Can't convert number to bigint");
   // eslint-disable-next-line es/no-bigint -- safe
   return BigInt(prim);
+};
+
+
+/***/ },
+
+/***/ 5137
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+// toObject with fallback for non-array-like ES3 strings
+var IndexedObject = __webpack_require__(2203);
+var requireObjectCoercible = __webpack_require__(5034);
+
+module.exports = function (it) {
+  return IndexedObject(requireObjectCoercible(it));
 };
 
 
@@ -51677,6 +52012,42 @@ module.exports = function (name) {
 
 /***/ },
 
+/***/ 187
+(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(3762);
+var $includes = (__webpack_require__(789).includes);
+var fails = __webpack_require__(299);
+var addToUnscopables = __webpack_require__(1825);
+
+// FF99+ bug
+var BROKEN_ON_SPARSE = fails(function () {
+  // eslint-disable-next-line es/no-array-prototype-includes -- detection
+  return !Array(1).includes();
+});
+
+// Safari 26.4- bug
+var BROKEN_ON_SPARSE_WITH_FROM_INDEX = fails(function () {
+  // eslint-disable-next-line no-sparse-arrays, es/no-array-prototype-includes -- detection
+  return [, 1].includes(undefined, 1);
+});
+
+// `Array.prototype.includes` method
+// https://tc39.es/ecma262/#sec-array.prototype.includes
+$({ target: 'Array', proto: true, forced: BROKEN_ON_SPARSE || BROKEN_ON_SPARSE_WITH_FROM_INDEX }, {
+  includes: function includes(el /* , fromIndex = 0 */) {
+    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
+  }
+});
+
+// https://tc39.es/ecma262/#sec-array.prototype-@@unscopables
+addToUnscopables('includes');
+
+
+/***/ },
+
 /***/ 8376
 (__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
@@ -51824,11 +52195,11 @@ var getSortCompare = function (comparefn) {
   return function (x, y) {
     if (comparefn !== undefined) return +comparefn(x, y) || 0;
     // eslint-disable-next-line no-self-compare -- NaN check
-    if (y !== y) return -1;
+    if (y !== y) return x !== x ? 0 : -1;
     // eslint-disable-next-line no-self-compare -- NaN check
     if (x !== x) return 1;
-    if (x === 0 && y === 0) return 1 / x > 0 && 1 / y < 0 ? 1 : -1;
-    return x > y;
+    if (x === 0 && y === 0) return 1 / x > 0 ? (1 / y > 0 ? 0 : 1) : (1 / y > 0 ? -1 : 0);
+    return x > y ? 1 : x < y ? -1 : 0;
   };
 };
 
@@ -66558,6 +66929,403 @@ module.exports = $f898ea50f3b38ab8$var$LineBreaker;
 
 /***/ },
 
+/***/ 381
+(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+/* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
+
+
+var zlib = __webpack_require__(6729);
+
+function _interopDefaultCompat (e) { return e && typeof e === 'object' && 'default' in e ? e : { default: e }; }
+
+var zlib__default = /*#__PURE__*/_interopDefaultCompat(zlib);
+
+class PNG {
+  static decode(path, fn) {
+    {
+      throw new Error('PNG.decode not available in browser build');
+    }
+  }
+
+  static load(path) {
+    {
+      throw new Error('PNG.load not available in browser build');
+    }
+  }
+
+  constructor(data) {
+    let i;
+    this.data = data;
+    this.pos = 8; // Skip the default header
+
+    this.palette = [];
+    this.imgData = [];
+    this.transparency = {};
+    this.text = {};
+
+    while (true) {
+      const chunkSize = this.readUInt32();
+      let section = '';
+      for (i = 0; i < 4; i++) {
+        section += String.fromCharCode(this.data[this.pos++]);
+      }
+
+      switch (section) {
+        case 'IHDR':
+          // we can grab  interesting values from here (like width, height, etc)
+          this.width = this.readUInt32();
+          this.height = this.readUInt32();
+          this.bits = this.data[this.pos++];
+          this.colorType = this.data[this.pos++];
+          this.compressionMethod = this.data[this.pos++];
+          this.filterMethod = this.data[this.pos++];
+          this.interlaceMethod = this.data[this.pos++];
+          break;
+
+        case 'PLTE':
+          this.palette = this.read(chunkSize);
+          break;
+
+        case 'IDAT':
+          for (i = 0; i < chunkSize; i++) {
+            this.imgData.push(this.data[this.pos++]);
+          }
+          break;
+
+        case 'tRNS':
+          // This chunk can only occur once and it must occur after the
+          // PLTE chunk and before the IDAT chunk.
+          this.transparency = {};
+          switch (this.colorType) {
+            case 3:
+              // Indexed color, RGB. Each byte in this chunk is an alpha for
+              // the palette index in the PLTE ("palette") chunk up until the
+              // last non-opaque entry. Set up an array, stretching over all
+              // palette entries which will be 0 (opaque) or 1 (transparent).
+              this.transparency.indexed = this.read(chunkSize);
+              var short = 255 - this.transparency.indexed.length;
+              if (short > 0) {
+                for (i = 0; i < short; i++) {
+                  this.transparency.indexed.push(255);
+                }
+              }
+              break;
+            case 0:
+              // Greyscale. Corresponding to entries in the PLTE chunk.
+              // Grey is two bytes, range 0 .. (2 ^ bit-depth) - 1
+              this.transparency.grayscale = this.read(chunkSize)[0];
+              break;
+            case 2:
+              // True color with proper alpha channel.
+              this.transparency.rgb = this.read(chunkSize);
+              break;
+          }
+          break;
+
+        case 'tEXt':
+          var text = this.read(chunkSize);
+          var index = text.indexOf(0);
+          var key = String.fromCharCode.apply(String, text.slice(0, index));
+          this.text[key] = String.fromCharCode.apply(
+            String,
+            text.slice(index + 1)
+          );
+          break;
+
+        case 'IEND':
+          // we've got everything we need!
+          switch (this.colorType) {
+            case 0:
+            case 3:
+            case 4:
+              this.colors = 1;
+              break;
+            case 2:
+            case 6:
+              this.colors = 3;
+              break;
+          }
+
+          this.hasAlphaChannel = [4, 6].includes(this.colorType);
+          var colors = this.colors + (this.hasAlphaChannel ? 1 : 0);
+          this.pixelBitlength = this.bits * colors;
+
+          switch (this.colors) {
+            case 1:
+              this.colorSpace = 'DeviceGray';
+              break;
+            case 3:
+              this.colorSpace = 'DeviceRGB';
+              break;
+          }
+
+          this.imgData = Buffer.from(this.imgData);
+          return;
+
+        default:
+          // unknown (or unimportant) section, skip it
+          this.pos += chunkSize;
+      }
+
+      this.pos += 4; // Skip the CRC
+
+      if (this.pos > this.data.length) {
+        throw new Error('Incomplete or corrupt PNG file');
+      }
+    }
+  }
+
+  read(bytes) {
+    const result = new Array(bytes);
+    for (let i = 0; i < bytes; i++) {
+      result[i] = this.data[this.pos++];
+    }
+    return result;
+  }
+
+  readUInt32() {
+    const b1 = this.data[this.pos++] << 24;
+    const b2 = this.data[this.pos++] << 16;
+    const b3 = this.data[this.pos++] << 8;
+    const b4 = this.data[this.pos++];
+    return b1 | b2 | b3 | b4;
+  }
+
+  readUInt16() {
+    const b1 = this.data[this.pos++] << 8;
+    const b2 = this.data[this.pos++];
+    return b1 | b2;
+  }
+
+  decodePixels(fn) {
+    return zlib__default.default.inflate(this.imgData, (err, data) => {
+      if (err) {
+        throw err;
+      }
+
+      const { width, height } = this;
+      const pixelBytes = this.pixelBitlength / 8;
+
+      const pixels = Buffer.alloc(width * height * pixelBytes);
+      const { length } = data;
+      let pos = 0;
+
+      function pass(x0, y0, dx, dy, singlePass = false) {
+        const w = Math.ceil((width - x0) / dx);
+        const h = Math.ceil((height - y0) / dy);
+        const scanlineLength = pixelBytes * w;
+        const buffer = singlePass ? pixels : Buffer.alloc(scanlineLength * h);
+        let row = 0;
+        let c = 0;
+        while (row < h && pos < length) {
+          var byte, col, i, left, upper;
+          switch (data[pos++]) {
+            case 0: // None
+              for (i = 0; i < scanlineLength; i++) {
+                buffer[c++] = data[pos++];
+              }
+              break;
+
+            case 1: // Sub
+              for (i = 0; i < scanlineLength; i++) {
+                byte = data[pos++];
+                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
+                buffer[c++] = (byte + left) % 256;
+              }
+              break;
+
+            case 2: // Up
+              for (i = 0; i < scanlineLength; i++) {
+                byte = data[pos++];
+                col = (i - (i % pixelBytes)) / pixelBytes;
+                upper =
+                  row &&
+                  buffer[
+                    (row - 1) * scanlineLength +
+                      col * pixelBytes +
+                      (i % pixelBytes)
+                  ];
+                buffer[c++] = (upper + byte) % 256;
+              }
+              break;
+
+            case 3: // Average
+              for (i = 0; i < scanlineLength; i++) {
+                byte = data[pos++];
+                col = (i - (i % pixelBytes)) / pixelBytes;
+                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
+                upper =
+                  row &&
+                  buffer[
+                    (row - 1) * scanlineLength +
+                      col * pixelBytes +
+                      (i % pixelBytes)
+                  ];
+                buffer[c++] = (byte + Math.floor((left + upper) / 2)) % 256;
+              }
+              break;
+
+            case 4: // Paeth
+              for (i = 0; i < scanlineLength; i++) {
+                var paeth, upperLeft;
+                byte = data[pos++];
+                col = (i - (i % pixelBytes)) / pixelBytes;
+                left = i < pixelBytes ? 0 : buffer[c - pixelBytes];
+
+                if (row === 0) {
+                  upper = upperLeft = 0;
+                } else {
+                  upper =
+                    buffer[
+                      (row - 1) * scanlineLength +
+                        col * pixelBytes +
+                        (i % pixelBytes)
+                    ];
+                  upperLeft =
+                    col &&
+                    buffer[
+                      (row - 1) * scanlineLength +
+                        (col - 1) * pixelBytes +
+                        (i % pixelBytes)
+                    ];
+                }
+
+                const p = left + upper - upperLeft;
+                const pa = Math.abs(p - left);
+                const pb = Math.abs(p - upper);
+                const pc = Math.abs(p - upperLeft);
+
+                if (pa <= pb && pa <= pc) {
+                  paeth = left;
+                } else if (pb <= pc) {
+                  paeth = upper;
+                } else {
+                  paeth = upperLeft;
+                }
+
+                buffer[c++] = (byte + paeth) % 256;
+              }
+              break;
+
+            default:
+              throw new Error(`Invalid filter algorithm: ${data[pos - 1]}`);
+          }
+
+          if (!singlePass) {
+            let pixelsPos = ((y0 + row * dy) * width + x0) * pixelBytes;
+            let bufferPos = row * scanlineLength;
+            for (i = 0; i < w; i++) {
+              for (let j = 0; j < pixelBytes; j++)
+                pixels[pixelsPos++] = buffer[bufferPos++];
+              pixelsPos += (dx - 1) * pixelBytes;
+            }
+          }
+
+          row++;
+        }
+      }
+
+      if (this.interlaceMethod === 1) {
+        /*
+          1 6 4 6 2 6 4 6
+          7 7 7 7 7 7 7 7
+          5 6 5 6 5 6 5 6
+          7 7 7 7 7 7 7 7
+          3 6 4 6 3 6 4 6
+          7 7 7 7 7 7 7 7
+          5 6 5 6 5 6 5 6
+          7 7 7 7 7 7 7 7
+        */
+        pass(0, 0, 8, 8); // 1
+        pass(4, 0, 8, 8); // 2
+        pass(0, 4, 4, 8); // 3
+        pass(2, 0, 4, 4); // 4
+        pass(0, 2, 2, 4); // 5
+        pass(1, 0, 2, 2); // 6
+        pass(0, 1, 1, 2); // 7
+      } else {
+        pass(0, 0, 1, 1, true);
+      }
+
+      return fn(pixels);
+    });
+  }
+
+  decodePalette() {
+    const { palette } = this;
+    const { length } = palette;
+    const transparency = this.transparency.indexed || [];
+    const ret = Buffer.alloc(transparency.length + length);
+    let pos = 0;
+    let c = 0;
+
+    for (let i = 0; i < length; i += 3) {
+      var left;
+      ret[pos++] = palette[i];
+      ret[pos++] = palette[i + 1];
+      ret[pos++] = palette[i + 2];
+      ret[pos++] = (left = transparency[c++]) != null ? left : 255;
+    }
+
+    return ret;
+  }
+
+  copyToImageData(imageData, pixels) {
+    let j, k;
+    let { colors } = this;
+    let palette = null;
+    let alpha = this.hasAlphaChannel;
+
+    if (this.palette.length) {
+      palette =
+        this._decodedPalette || (this._decodedPalette = this.decodePalette());
+      colors = 4;
+      alpha = true;
+    }
+
+    const data = imageData.data || imageData;
+    const { length } = data;
+    const input = palette || pixels;
+    let i = (j = 0);
+
+    if (colors === 1) {
+      while (i < length) {
+        k = palette ? pixels[i / 4] * 4 : j;
+        const v = input[k++];
+        data[i++] = v;
+        data[i++] = v;
+        data[i++] = v;
+        data[i++] = alpha ? input[k++] : 255;
+        j = k;
+      }
+    } else {
+      while (i < length) {
+        k = palette ? pixels[i / 4] * 4 : j;
+        data[i++] = input[k++];
+        data[i++] = input[k++];
+        data[i++] = input[k++];
+        data[i++] = alpha ? input[k++] : 255;
+        j = k;
+      }
+    }
+  }
+
+  decode(fn) {
+    const ret = Buffer.alloc(this.width * this.height * 4);
+    return this.decodePixels(pixels => {
+      this.copyToImageData(ret, pixels);
+      return fn(ret);
+    });
+  }
+}
+
+module.exports = PNG;
+
+
+/***/ },
+
 /***/ 5233
 (module) {
 
@@ -68201,6 +68969,24 @@ exports["default"] = XmlDocument;
 
 /***/ },
 
+/***/ 9294
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   c: () => (/* reexport default export from named module */ _index_js__WEBPACK_IMPORTED_MODULE_0__)
+/* harmony export */ });
+/* unused harmony import specifier */ var getGeneratorFunction;
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3011);
+
+
+/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ((/* unused pure expression or super */ null && (getGeneratorFunction)));
+
+
+
+
+/***/ },
+
 /***/ 1635
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -68536,10 +69322,10 @@ function __addDisposableResource(env, value, async) {
   return value;
 }
 
-var _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+var _SuppressedError = (/* unused pure expression or super */ null && (typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
   var e = new Error(message);
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
+}));
 
 function __disposeResources(env) {
   function fail(e) {
@@ -68576,7 +69362,7 @@ function __rewriteRelativeImportExtension(path, preserveJsx) {
   return path;
 }
 
-/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ({
+/* unused harmony default export */ var __WEBPACK_DEFAULT_EXPORT__ = ((/* unused pure expression or super */ null && ({
   __extends,
   __assign,
   __rest,
@@ -68609,7 +69395,7 @@ function __rewriteRelativeImportExtension(path, preserveJsx) {
   __addDisposableResource,
   __disposeResources,
   __rewriteRelativeImportExtension,
-});
+})));
 
 
 /***/ },
@@ -68625,17 +69411,17 @@ module.exports = /*#__PURE__*/JSON.parse('{"ifd":{"8298":"Copyright","8769":"Exi
 /******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
+/******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 		const module = __webpack_module_cache__[moduleId] = {
 /******/ 			id: moduleId,
 /******/ 			loaded: false,
 /******/ 			exports: {}
@@ -68656,7 +69442,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"ifd":{"8298":"Copyright","8769":"Exi
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -68666,11 +69452,26 @@ module.exports = /*#__PURE__*/JSON.parse('{"ifd":{"8298":"Copyright","8769":"Exi
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -68707,7 +69508,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"ifd":{"8298":"Copyright","8769":"Exi
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(6092);
+/******/ 	let __webpack_exports__ = __webpack_require__(6092);
 /******/ 	
 /******/ 	return __webpack_exports__;
 /******/ })()

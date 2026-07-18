@@ -66,17 +66,18 @@ class ElementWriter extends EventEmitter {
 		let lineWidth = line.getWidth();
 
 		let alignment = line.inlines && line.inlines.length > 0 && line.inlines[0].alignment;
-		let isRTL = line.isRTL && line.isRTL();
+    let wasExplicit = line.inlines && line.inlines.length > 0 && line.inlines[0]._explicitAlignment;
+    let isRTL = line.isRTL && line.isRTL();
 
-		let offset = 0;
+    let offset = 0;
 
-		// For RTL lines, apply special handling
-		if (isRTL) {
-			if (!alignment || alignment === 'left') {
-				alignment = 'right';
-			}
-			this.adjustRTLInlines(line, width);
-		}
+    // For RTL lines, apply special handling
+    if (isRTL) {
+      if (!alignment || (alignment === 'left' && !wasExplicit)) {
+        alignment = 'right';
+      }
+      this.adjustRTLInlines(line, width);
+    }
 
 		switch (alignment) {
 			case 'right':

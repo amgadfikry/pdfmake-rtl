@@ -64,16 +64,17 @@
     "build:cairo": "shx mkdir -p build/fonts && shx mkdir -p build/fonts/Cairo && shx cp -r fonts/Cairo/*.* build/fonts/Cairo && brfs \"./src/browser-extensions/fonts/Cairo.js\" > build/fonts/Cairo.js",
     "lint": "eslint \"./src/**/*.js\" \"./tests/**/*.js\" \"./examples/**/*.js\" \"./standard-fonts/**/*.js\" \"./fonts/**/*.js\"",
     "mocha": "mocha --reporter spec \"./tests/**/*.spec.js\"",
-    "playground": "node dev-playground/server.js"
+    "playground": "node dev-playground/server.js",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aysnet1/pdfmake-rtl.git"
+    "url": "git+https://github.com/amgadfikry/pdfmake-rtl.git"
   },
   "bugs": {
-    "url": "https://github.com/aysnet1/pdfmake-rtl/issues"
+    "url": "https://github.com/amgadfikry/pdfmake-rtl/issues"
   },
-  "homepage": "https://github.com/aysnet1/pdfmake-rtl#readme",
+  "homepage": "https://github.com/amgadfikry/pdfmake-rtl#readme",
   "rtlFeatures": {
     "automaticTableColumnReversal": true,
     "arabicTextSupport": true,
