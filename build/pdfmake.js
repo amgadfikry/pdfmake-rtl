@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(4675);
+var pdfkit_es = __webpack_require__(128);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -624,6 +624,20 @@ function fixArabicTextUsingReplace(text) {
   }
   return result;
 }
+function detectBaseDirection(text) {
+  if (!text) return 'ltr';
+  for (let i = 0; i < text.length; i++) {
+    if (isRTLChar(text[i])) return 'rtl';
+    if (isLTRChar(text[i])) return 'ltr';
+  }
+  return 'ltr';
+}
+function extractPlainText(text) {
+  if (typeof text === 'string') return text;
+  if (Array.isArray(text)) return text.map(extractPlainText).join('');
+  if (text && typeof text === 'object' && text.text !== undefined) return extractPlainText(text.text);
+  return '';
+}
 
 /**
  * Apply RTL properties to a node
@@ -640,19 +654,11 @@ function applyRTLToNode(node, forceRTL) {
   }
 
   // Determine if node should be RTL
-  let shouldBeRTL = forceRTL;
-  if (!forceRTL && node.text) {
-    const textStr = typeof node.text === 'string' ? node.text : Array.isArray(node.text) ? node.text.join('') : '';
-    shouldBeRTL = getTextDirection(textStr) === 'rtl';
+  if (!node.direction) {
+    node.direction = forceRTL ? 'rtl' : detectBaseDirection(extractPlainText(node.text));
   }
-  if (shouldBeRTL) {
-    // Set structural RTL properties (alignment)
-    // Font is resolved later by TextInlines.measure with priority:
-    // item font > style font > defaultStyle font > auto-detect (Cairo for RTL, Roboto for LTR)
-    // Text shaping (bracket mirroring) is handled at render time in ElementWriter
-    if (!node.alignment) {
-      node.alignment = 'right';
-    }
+  if (node.direction === 'rtl' && !node.alignment) {
+    node.alignment = 'right';
   }
   return node;
 }
@@ -941,7 +947,7 @@ class DocPreprocessor {
       node = processRTLElement(node, true);
     }
     // Auto-detect RTL for text nodes without explicit rtl property
-    else if (node && typeof node === 'object' && node.text && typeof node.text === 'string' && containsRTL(node.text) && !node.rtl) {
+    else if (node && typeof node === 'object' && node.text !== undefined && !node.rtl) {
       node = applyRTLToNode(node, false);
     }
     // Auto-detect RTL for table nodes - reverse columns if table has RTL content
@@ -5286,6 +5292,8 @@ class ElementWriter extends events.EventEmitter {
     const NUMBER_PUNCTUATION_REGEX = /^(\d+)([.:/\-)(]+)(\s*)$/;
     // Characters that are "boundary neutral" — separators/punctuation between scripts
     const BOUNDARY_NEUTRAL = /[/\\\-()[\]{}<>:;.,!?@#$%^&*_=+|~`'"،؛؟\s]/;
+    let first = line.inlines[0];
+    let baseRTL = first ? first.direction === 'rtl' : true;
 
     // --- Step 0: Pre-split inlines at RTL↔neutral and LTR↔neutral boundaries ---
     // e.g. "العربية/" → ["العربية", "/"]  and  "hello-" → ["hello", "-"]
@@ -5472,13 +5480,13 @@ class ElementWriter extends events.EventEmitter {
         }
       }
       if (prevDir && nextDir) {
-        runs[i].dir = prevDir === nextDir ? prevDir : 'rtl';
+        runs[i].dir = prevDir === nextDir ? prevDir : baseRTL ? 'rtl' : 'ltr';
       } else if (prevDir) {
         runs[i].dir = prevDir;
       } else if (nextDir) {
         runs[i].dir = nextDir;
       } else {
-        runs[i].dir = 'rtl'; // all neutral → base direction
+        runs[i].dir = baseRTL ? 'rtl' : 'ltr'; // all neutral → base direction
       }
     }
 
@@ -5495,7 +5503,9 @@ class ElementWriter extends events.EventEmitter {
     runs = merged;
 
     // --- Step 4: Reverse run order (base direction is RTL) ---
-    runs.reverse();
+    if (baseRTL) {
+      runs.reverse();
+    }
 
     // --- Step 5: Within each RTL run, reverse the inline order ---
     runs.forEach(run => {
@@ -9203,7 +9213,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(5468);
+var FileSaver_min = __webpack_require__(9758);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22287,7 +22297,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 4675
+/***/ 128
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49584,7 +49594,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 5468
+/***/ 9758
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
