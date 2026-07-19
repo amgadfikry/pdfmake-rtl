@@ -55,9 +55,9 @@ class DocPreprocessor {
 			node = processRTLElement(node, true);
 		}
 		// Auto-detect RTL for text nodes without explicit rtl property
-		else if (node && typeof node === 'object' && node.text && typeof node.text === 'string' && containsRTL(node.text) && !node.rtl) {
-			node = applyRTLToNode(node, false);
-		}
+		else if (node && typeof node === 'object' && node.text !== undefined && !node.rtl) {
+        node = applyRTLToNode(node, false);
+    }
 		// Auto-detect RTL for table nodes - reverse columns if table has RTL content
 		else if (node && typeof node === 'object' && node.table && !node.rtl) {
 			node = processRTLTable(node);

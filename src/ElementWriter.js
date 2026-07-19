@@ -134,6 +134,8 @@ class ElementWriter extends EventEmitter {
 		const NUMBER_PUNCTUATION_REGEX = /^(\d+)([.:/\-)(]+)(\s*)$/;
 		// Characters that are "boundary neutral" — separators/punctuation between scripts
 		const BOUNDARY_NEUTRAL = /[/\\\-()[\]{}<>:;.,!?@#$%^&*_=+|~`'"،؛؟\s]/;
+    let first = line.inlines[0];
+    let baseRTL = first ? first.direction === 'rtl' : true;
 
 		// --- Step 0: Pre-split inlines at RTL↔neutral and LTR↔neutral boundaries ---
 		// e.g. "العربية/" → ["العربية", "/"]  and  "hello-" → ["hello", "-"]
@@ -311,13 +313,13 @@ class ElementWriter extends EventEmitter {
 			}
 
 			if (prevDir && nextDir) {
-				runs[i].dir = (prevDir === nextDir) ? prevDir : 'rtl';
+				runs[i].dir = (prevDir === nextDir) ? prevDir : baseRTL ? 'rtl' : 'ltr';
 			} else if (prevDir) {
 				runs[i].dir = prevDir;
 			} else if (nextDir) {
 				runs[i].dir = nextDir;
 			} else {
-				runs[i].dir = 'rtl'; // all neutral → base direction
+				runs[i].dir = baseRTL ? 'rtl' : 'ltr'; // all neutral → base direction
 			}
 		}
 
@@ -334,7 +336,9 @@ class ElementWriter extends EventEmitter {
 		runs = merged;
 
 		// --- Step 4: Reverse run order (base direction is RTL) ---
-		runs.reverse();
+		if (baseRTL) {
+      runs.reverse();
+    }
 
 		// --- Step 5: Within each RTL run, reverse the inline order ---
 		runs.forEach(run => {

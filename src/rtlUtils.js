@@ -234,6 +234,22 @@ function fixArabicTextUsingReplace(text) {
 	return result;
 }
 
+function detectBaseDirection(text) {
+  if (!text) return 'ltr';
+  for (let i = 0; i < text.length; i++) {
+    if (isRTLChar(text[i])) return 'rtl';
+    if (isLTRChar(text[i])) return 'ltr';
+  }
+  return 'ltr';
+}
+
+function extractPlainText(text) {
+  if (typeof text === 'string') return text;
+  if (Array.isArray(text)) return text.map(extractPlainText).join('');
+  if (text && typeof text === 'object' && text.text !== undefined) return extractPlainText(text.text);
+  return '';
+}
+
 /**
  * Apply RTL properties to a node
  * @param {object} node - Document node
@@ -246,26 +262,16 @@ function applyRTLToNode(node, forceRTL = false) {
 	}
 
 	// Determine if node should be RTL
-	let shouldBeRTL = forceRTL;
+	if (!node.direction) {
+    node.direction = forceRTL ? 'rtl' : detectBaseDirection(extractPlainText(node.text));
+  }
 
-	if (!forceRTL && node.text) {
-		const textStr = typeof node.text === 'string' ? node.text :
-			Array.isArray(node.text) ? node.text.join('') : '';
-		shouldBeRTL = getTextDirection(textStr) === 'rtl';
+  if (node.direction === 'rtl' && !node.alignment) {
+    node.alignment = 'right';
+  }
+
+  return node;
 	}
-
-	if (shouldBeRTL) {
-		// Set structural RTL properties (alignment)
-		// Font is resolved later by TextInlines.measure with priority:
-		// item font > style font > defaultStyle font > auto-detect (Cairo for RTL, Roboto for LTR)
-		// Text shaping (bracket mirroring) is handled at render time in ElementWriter
-		if (!node.alignment) {
-			node.alignment = 'right';
-		}
-	}
-
-	return node;
-}
 
 /**
  * Process table for RTL layout
