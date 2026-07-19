@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(128);
+var pdfkit_es = __webpack_require__(3164);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -5540,7 +5540,16 @@ class ElementWriter extends events.EventEmitter {
         // After Step 5 reversed the inline order, brackets like "(" and ")"
         // are in swapped positions. Mirroring the glyph restores correct visuals.
         // e.g. reversed ")" at position 0 → mirror to "(" → visually correct.
-        if (run.dir === 'rtl' && !containsRTL(inline.text) && !LTR_REGEX.test(inline.text)) {
+        const PURE_PUNCTUATION = /^[\s:;,.\-–—/\\()[\]{}<>]+$/;
+        if (run.dir === 'rtl' && PURE_PUNCTUATION.test(inline.text)) {
+          // Pure punctuation/whitespace tokens (e.g. ": ") need their character
+          // order reversed too, not just their position in the line, otherwise
+          // they read backwards relative to the RTL text around them.
+          let chars = inline.text.split('').reverse();
+          inline.text = chars.map(ch => MIRROR_MAP[ch] !== undefined ? MIRROR_MAP[ch] : ch).join('');
+        } else if (run.dir === 'rtl' && !containsRTL(inline.text) && !LTR_REGEX.test(inline.text)) {
+          // Anything else neutral (digits, etc.) keeps its character order as-is,
+          // only mirror bracket glyphs, reversing digit order would break numbers.
           let mirrored = '';
           for (let c = 0; c < inline.text.length; c++) {
             let ch = inline.text[c];
@@ -9213,7 +9222,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(9758);
+var FileSaver_min = __webpack_require__(2756);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22297,7 +22306,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 128
+/***/ 3164
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49594,7 +49603,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 9758
+/***/ 2756
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
