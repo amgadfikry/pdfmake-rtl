@@ -266,10 +266,6 @@ function applyRTLToNode(node, forceRTL = false) {
     node.direction = forceRTL ? 'rtl' : detectBaseDirection(extractPlainText(node.text));
   }
 
-  if (node.direction === 'rtl' && !node.alignment) {
-    node.alignment = 'right';
-  }
-
   return node;
 	}
 
