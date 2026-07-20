@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(5855);
+var pdfkit_es = __webpack_require__(8366);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -5287,8 +5287,7 @@ class ElementWriter extends events.EventEmitter {
     const NUMBER_PUNCTUATION_REGEX = /^(\d+)([.:/\-)(]+)(\s*)$/;
     // Characters that are "boundary neutral" — separators/punctuation between scripts
     const BOUNDARY_NEUTRAL = /[/\\\-()[\]{}<>:;.,!?@#$%^&*_=+|~`'"،؛؟\s]/;
-    let first = line.inlines[0];
-    let baseRTL = first ? first.direction === 'rtl' : true;
+    let baseRTL = line.isRTL && line.isRTL();
 
     // --- Step 0: Pre-split inlines at RTL↔neutral and LTR↔neutral boundaries ---
     // e.g. "العربية/" → ["العربية", "/"]  and  "hello-" → ["hello", "-"]
@@ -9217,7 +9216,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(3702);
+var FileSaver_min = __webpack_require__(6670);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22301,7 +22300,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 5855
+/***/ 8366
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49598,7 +49597,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 3702
+/***/ 6670
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),

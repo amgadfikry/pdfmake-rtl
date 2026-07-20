@@ -134,8 +134,7 @@ class ElementWriter extends EventEmitter {
 		const NUMBER_PUNCTUATION_REGEX = /^(\d+)([.:/\-)(]+)(\s*)$/;
 		// Characters that are "boundary neutral" — separators/punctuation between scripts
 		const BOUNDARY_NEUTRAL = /[/\\\-()[\]{}<>:;.,!?@#$%^&*_=+|~`'"،؛؟\s]/;
-    let first = line.inlines[0];
-    let baseRTL = first ? first.direction === 'rtl' : true;
+    let baseRTL = line.isRTL && line.isRTL();
 
 		// --- Step 0: Pre-split inlines at RTL↔neutral and LTR↔neutral boundaries ---
 		// e.g. "العربية/" → ["العربية", "/"]  and  "hello-" → ["hello", "-"]
