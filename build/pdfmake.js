@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(6897);
+var pdfkit_es = __webpack_require__(5855);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -790,8 +790,7 @@ function processRTLList(listItems, forceRTL) {
       const shouldBeRTL = forceRTL || getTextDirection(item) === 'rtl';
       if (shouldBeRTL) {
         return {
-          text: item,
-          alignment: 'right'
+          text: item
         };
       }
       return item;
@@ -838,8 +837,7 @@ function processRTLElement(element, forceRTL) {
     const shouldBeRTL = forceRTL || getTextDirection(element) === 'rtl';
     if (shouldBeRTL) {
       return {
-        text: element,
-        alignment: 'right'
+        text: element
       };
     }
     return element;
@@ -9219,7 +9217,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(8256);
+var FileSaver_min = __webpack_require__(3702);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22303,7 +22301,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 6897
+/***/ 5855
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49600,7 +49598,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 8256
+/***/ 3702
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),

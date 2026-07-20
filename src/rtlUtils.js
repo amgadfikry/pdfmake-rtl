@@ -398,7 +398,6 @@ function processRTLList(listItems, forceRTL = false) {
 			if (shouldBeRTL) {
 				return {
 					text: item,
-					alignment: 'right'
 				};
 			}
 			return item;
@@ -446,7 +445,6 @@ function processRTLElement(element, forceRTL = false) {
 		if (shouldBeRTL) {
 			return {
 				text: element,
-				alignment: 'right'
 			};
 		}
 		return element;
