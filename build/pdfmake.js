@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(9256);
+var pdfkit_es = __webpack_require__(1095);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -5338,12 +5338,39 @@ class ElementWriter extends events.EventEmitter {
             clone._isSplit = true;
             splitInlines.push(clone);
           }
-          if (coreText) {
-            let clone = Object.assign({}, inline);
-            clone.text = coreText;
-            clone.width = inline.font ? inline.font.widthOfString(coreText, inline.fontSize, inline.fontFeatures) + (inline.characterSpacing || 0) * (coreText.length - 1) : 0;
-            clone._isSplit = true;
-            splitInlines.push(clone);
+
+          // Split core text at internal boundary neutrals (e.g. "az-احمد" → ["az", "-", "احمد"])
+          if (coreText && coreText.length > 1) {
+            let internalParts = [];
+            let partStart = 0;
+            for (let i = 0; i < coreText.length; i++) {
+              let ch = coreText[i];
+              if (BOUNDARY_NEUTRAL.test(ch) && !containsRTL(ch) && !LTR_REGEX.test(ch)) {
+                if (i > partStart) {
+                  internalParts.push(coreText.slice(partStart, i));
+                }
+                internalParts.push(ch);
+                partStart = i + 1;
+              }
+            }
+            if (partStart < coreText.length) {
+              internalParts.push(coreText.slice(partStart));
+            }
+            if (internalParts.length > 1) {
+              for (let part of internalParts) {
+                let clone = Object.assign({}, inline);
+                clone.text = part;
+                clone.width = inline.font ? inline.font.widthOfString(part, inline.fontSize, inline.fontFeatures) + (inline.characterSpacing || 0) * (part.length - 1) : 0;
+                clone._isSplit = true;
+                splitInlines.push(clone);
+              }
+            } else {
+              let clone = Object.assign({}, inline);
+              clone.text = coreText;
+              clone.width = inline.font ? inline.font.widthOfString(coreText, inline.fontSize, inline.fontFeatures) + (inline.characterSpacing || 0) * (coreText.length - 1) : 0;
+              clone._isSplit = true;
+              splitInlines.push(clone);
+            }
           }
           if (trailingText) {
             let clone = Object.assign({}, inline);
@@ -9218,7 +9245,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(3995);
+var FileSaver_min = __webpack_require__(921);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22302,7 +22329,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 9256
+/***/ 1095
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49599,7 +49626,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 3995
+/***/ 921
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
