@@ -176,61 +176,33 @@ class ElementWriter extends EventEmitter {
 
 				// Only split if there's a meaningful core left
 				if ((leadingEnd > 0 || trailingStart < text.length) && leadingEnd < trailingStart) {
-    let leadingText = text.slice(0, leadingEnd);
-    let coreText = text.slice(leadingEnd, trailingStart);
-    let trailingText = text.slice(trailingStart);
+					let leadingText = text.slice(0, leadingEnd);
+					let coreText = text.slice(leadingEnd, trailingStart);
+					let trailingText = text.slice(trailingStart);
 
-    if (leadingText) {
-        let clone = Object.assign({}, inline);
-        clone.text = leadingText;
-        clone.width = inline.font ? inline.font.widthOfString(leadingText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (leadingText.length - 1)) : 0;
-        clone._isSplit = true;
-        splitInlines.push(clone);
-    }
+					if (leadingText) {
+						let clone = Object.assign({}, inline);
+						clone.text = leadingText;
+						clone.width = inline.font ? inline.font.widthOfString(leadingText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (leadingText.length - 1)) : 0;
+						clone._isSplit = true;
+						splitInlines.push(clone);
+					}
 
-    // Split core text at internal boundary neutrals (e.g. "az-احمد" → ["az", "-", "احمد"])
-    if (coreText && coreText.length > 1) {
-        let internalParts = [];
-        let partStart = 0;
-        for (let i = 0; i < coreText.length; i++) {
-            let ch = coreText[i];
-            if (BOUNDARY_NEUTRAL.test(ch) && !containsRTL(ch) && !LTR_REGEX.test(ch)) {
-                if (i > partStart) {
-                    internalParts.push(coreText.slice(partStart, i));
-                }
-                internalParts.push(ch);
-                partStart = i + 1;
-            }
-        }
-        if (partStart < coreText.length) {
-            internalParts.push(coreText.slice(partStart));
-        }
+					if (coreText) {
+						let clone = Object.assign({}, inline);
+						clone.text = coreText;
+						clone.width = inline.font ? inline.font.widthOfString(coreText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (coreText.length - 1)) : 0;
+						clone._isSplit = true;
+						splitInlines.push(clone);
+					}
 
-        if (internalParts.length > 1) {
-            for (let part of internalParts) {
-                let clone = Object.assign({}, inline);
-                clone.text = part;
-                clone.width = inline.font ? inline.font.widthOfString(part, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (part.length - 1)) : 0;
-                clone._isSplit = true;
-                splitInlines.push(clone);
-            }
-        } else {
-            let clone = Object.assign({}, inline);
-            clone.text = coreText;
-            clone.width = inline.font ? inline.font.widthOfString(coreText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (coreText.length - 1)) : 0;
-            clone._isSplit = true;
-            splitInlines.push(clone);
-        }
-    }
-
-    if (trailingText) {
-        let clone = Object.assign({}, inline);
-        clone.text = trailingText;
-        clone.width = inline.font ? inline.font.widthOfString(trailingText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (trailingText.length - 1)) : 0;
-        clone._isSplit = true;
-        splitInlines.push(clone);
-    }
-
+					if (trailingText) {
+						let clone = Object.assign({}, inline);
+						clone.text = trailingText;
+						clone.width = inline.font ? inline.font.widthOfString(trailingText, inline.fontSize, inline.fontFeatures) + ((inline.characterSpacing || 0) * (trailingText.length - 1)) : 0;
+						clone._isSplit = true;
+						splitInlines.push(clone);
+					}
 				} else {
 					splitInlines.push(inline);
 				}
