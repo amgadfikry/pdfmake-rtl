@@ -1,3 +1,5 @@
+import { containsRTL } from './rtlUtils';
+
 class Line {
 	/**
 	 * @param {number} maxWidth Maximum width this line can have
@@ -103,7 +105,7 @@ class Line {
 	 * @returns {boolean}
 	 */
 	isRTL() {
-		return this.inlines.some(inline => inline.isRTL || inline.direction === 'rtl');
+		return this.inlines.some(inline => inline.isRTL || inline.direction === 'rtl' || (inline.text && containsRTL(inline.text)));
 	}
 
 	clone() {

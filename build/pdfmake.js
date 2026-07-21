@@ -25,7 +25,7 @@ __webpack_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
 var es_array_includes = __webpack_require__(187);
 // EXTERNAL MODULE: ./node_modules/pdfkit/js/pdfkit.es.js
-var pdfkit_es = __webpack_require__(4613);
+var pdfkit_es = __webpack_require__(9256);
 ;// ./src/PDFDocument.js
 /* provided dependency */ var Buffer = __webpack_require__(783).Buffer;
 
@@ -6727,6 +6727,7 @@ class TableProcessor {
 }
 /* harmony default export */ const src_TableProcessor = (TableProcessor);
 ;// ./src/Line.js
+
 class Line {
   /**
    * @param {number} maxWidth Maximum width this line can have
@@ -6826,7 +6827,7 @@ class Line {
    * @returns {boolean}
    */
   isRTL() {
-    return this.inlines.some(inline => inline.isRTL || inline.direction === 'rtl');
+    return this.inlines.some(inline => inline.isRTL || inline.direction === 'rtl' || inline.text && containsRTL(inline.text));
   }
   clone() {
     let result = new Line(this.maxWidth);
@@ -9217,7 +9218,7 @@ class OutputDocument {
 }
 /* harmony default export */ const src_OutputDocument = (OutputDocument);
 // EXTERNAL MODULE: ./node_modules/file-saver/dist/FileSaver.min.js
-var FileSaver_min = __webpack_require__(5973);
+var FileSaver_min = __webpack_require__(3995);
 ;// ./src/browser-extensions/OutputDocumentBrowser.js
 
 
@@ -22301,7 +22302,7 @@ module.exports = {
 
 /***/ },
 
-/***/ 4613
+/***/ 9256
 (__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -49598,7 +49599,7 @@ module.exports = function whichTypedArray(value) {
 
 /***/ },
 
-/***/ 5973
+/***/ 3995
 (module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function(a,b){if(true)!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (b),
